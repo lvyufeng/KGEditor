@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from flask_wtf import CSRFProtect
 from logging.handlers import RotatingFileHandler
+from  py2neo import Graph
 pymysql.install_as_MySQLdb()
 
 # set log level
@@ -23,6 +24,7 @@ logging.getLogger().addHandler(file_log_handler)
 
 db = SQLAlchemy()
 redis_store = None
+graph = None
 
 def create_app(mode):
     """
@@ -39,6 +41,8 @@ def create_app(mode):
     global redis_store
     redis_store = redis.StrictRedis(host=config_cls.REDIS_HOST, port=config_cls.REDIS_PORT)
 
+    global graph
+    # graph = 
     # flask session, store session in redis
     Session(app)
 

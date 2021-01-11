@@ -101,6 +101,7 @@ def login():
 
     # verify password
     # if login failed, record failed times
+    logging.info(user.name)
     if user is None or not user.check_password(password):
         try:
             redis_store.incr("access_nums_%s" % user_ip)

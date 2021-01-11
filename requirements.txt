@@ -3,6 +3,7 @@ flask-script
 flask-sqlalchemy
 flask-session
 flask-wtf
+flask-migrate
 redis
 pymysql
 py2neo

@@ -28,7 +28,7 @@ class User(BaseModel, db.Model):
 
     @password.setter
     def password(self, value):
-        self.passwor_hash = generate_password_hash(value)
+        self.password_hash = generate_password_hash(value)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -37,7 +37,6 @@ class Project(BaseModel, db.Model):
     __tablename__ = 'project'
     id = db.Column(db.Integer, primary_key=True)
     creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
-    domain_id = db.Column(db.Integer, db.ForeignKey("domain.id"), nullable=False)
     name = db.Column(db.String(32), unique=True, nullable=False)
     partners = db.relationship('User', secondary=project_partner)
 
@@ -54,6 +53,7 @@ class Graph(BaseModel, db.Model):
     name = db.Column(db.String(32), unique=True, nullable=False)
     creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
     private = db.Column(db.Boolean, nullable=False)
+    domain_id = db.Column(db.Integer, db.ForeignKey("domain.id"), nullable=False)
 
 class Domain(BaseModel, db.Model):
     __tablename__ = 'domain'
