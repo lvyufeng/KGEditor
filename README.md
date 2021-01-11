@@ -13,7 +13,10 @@ python manage.py runserver
 2. Domain
 3. Project
 4. Graph
+<<<<<<< HEAD
 5. Partner_Project
+=======
+>>>>>>> 43e362330d293e1be9927df0656450e865c532b2
 
 ### db migration instructions
 
