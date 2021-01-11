@@ -1,10 +1,24 @@
+import redis
+import logging
 from flask import Flask
 from config import config_map
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from flask_wtf import CSRFProtect
-from kgeditor import api_1_0
-import redis
+from logging.handlers import RotatingFileHandler
+import pymysql
+pymysql.install_as_MySQLdb()
+
+# set log level
+logging.basicConfig(level=logging.DEBUG)
+# create log handler
+file_log_handler = RotatingFileHandler('logs/log',maxBytes=1024*1024*100, backupCount=10)
+# create log formatter
+formatter = logging.Formatter('%(levelname)s %(filename)s:%(lineno)d %(message)s')
+# set formatter
+file_log_handler.setFormatter(formatter)
+# global logger
+logging.getLogger().addHandler(file_log_handler)
 
 db = SQLAlchemy()
 redis_store = None
@@ -28,6 +42,8 @@ def create_app(mode):
     Session(app)
 
     # csrf protection
-    CSRFProtect(app)
+    # CSRFProtect(app)
+
+    from kgeditor import api_1_0
     app.register_blueprint(api_1_0.api, url_prefix="/api/v1.0")
     return app

@@ -130,3 +130,9 @@ dmypy.json
 
 # vscode
 .vscode/
+
+# user logs
+logs/
+
+# user migration folder
+migrations/
