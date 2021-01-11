@@ -59,7 +59,7 @@ class Domain(BaseModel, db.Model):
     __tablename__ = 'domain'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), unique=True, nullable=False)
-    graphs = db.relationship("Graph", backref='graph')
+    creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
 
     def to_dict(self):
         return {

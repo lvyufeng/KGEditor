@@ -1,10 +1,10 @@
+import re
+import logging
 from . import api
 from flask import request, jsonify, session
 from kgeditor.utils.response_code import RET
-import re
 from kgeditor.models import User
 from kgeditor import db, redis_store, constants
-import logging
 from sqlalchemy.exc import IntegrityError
 
 @api.route('/users', methods=['post'])

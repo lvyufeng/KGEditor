@@ -4,6 +4,7 @@ flask-sqlalchemy
 flask-session
 flask-wtf
 flask-migrate
+flask-cors
 redis
 pymysql
 py2neo

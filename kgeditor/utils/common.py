@@ -1,4 +1,4 @@
-from flask import session, jsonify
+from flask import session, jsonify, g
 from kgeditor.utils.response_code import RET
 import functools
 
