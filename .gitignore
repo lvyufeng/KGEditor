@@ -138,3 +138,4 @@ logs/
 migrations/
 
 bfg-1.13.1.jar
+config.py

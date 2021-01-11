@@ -4,6 +4,8 @@ a simple knowledge graph edit system implemented by flask
 ### how to use
 
 ```bash
+# rename config.example.py to config.py, and modify the configuration of your own dbs
+mv config.example.py to config.py
 # use manage.py to run
 python manage.py runserver
 ```
