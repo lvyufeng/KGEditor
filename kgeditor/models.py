@@ -6,13 +6,21 @@ class BaseModel(object):
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
+project_partner = db.Table(
+    "project_partener",
+    db.Column('project_id', db.Integer, db.ForeignKey("project.id"), primary_key=True),
+    db.Column('partner_id', db.Integer, db.ForeignKey("user_profile.id"), primary_key=True),
+    # authority = db.Column(db.Integer, db.ForeignKey("project.id"), nullable=False)
+)
+
 class User(BaseModel, db.Model):
     __tablename__ = 'user_profile'
     id = db.Column(db.Integer, primary_key=True)
     mobile = db.Column(db.String(11), unique=True, nullable=False)
-    passwor_hash = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
     name = db.Column(db.String(32), unique=True, nullable=False)
-    # graphs = db.relationship('Graph', backref='user')
+    graphs = db.relationship('Graph', backref='creator')
+    projects = db.relationship('Project', secondary=project_partner)
     
     @property
     def password(self):
@@ -23,10 +31,16 @@ class User(BaseModel, db.Model):
         self.passwor_hash = generate_password_hash(value)
 
     def check_password(self, password):
-        return check_password_hash(self.passwor_hash, password)
+        return check_password_hash(self.password_hash, password)
             
-# class Project(BaseModel, db.Model):
-#     pass
+class Project(BaseModel, db.Model):
+    __tablename__ = 'project'
+    id = db.Column(db.Integer, primary_key=True)
+    creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
+    domain_id = db.Column(db.Integer, db.ForeignKey("domain.id"), nullable=False)
+    name = db.Column(db.String(32), unique=True, nullable=False)
+    partners = db.relationship('User', secondary=project_partner)
+
 
 # class DataBase(BaseModel, db.Model):
 #     pass
@@ -34,8 +48,21 @@ class User(BaseModel, db.Model):
 # class Model(BaseModel, db.Model):
 #     pass
 
-# class Graph(BaseModel, db.Model):
-#     pass
+class Graph(BaseModel, db.Model):
+    __tablename__ = 'graph'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32), unique=True, nullable=False)
+    creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
+    private = db.Column(db.Boolean, nullable=False)
 
+class Domain(BaseModel, db.Model):
+    __tablename__ = 'domain'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32), unique=True, nullable=False)
+    graphs = db.relationship("Graph", backref='graph')
 
-    
+    def to_dict(self):
+        return {
+            'domain_id': self.id,
+            'domain_name': self.name
+        }

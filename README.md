@@ -9,6 +9,11 @@ python manage.py runserver
 ```
 ### db design
 
+1. User
+2. Domain
+3. Project
+4. Graph
+5. Partner_Project
 
 ### db migration instructions
 
