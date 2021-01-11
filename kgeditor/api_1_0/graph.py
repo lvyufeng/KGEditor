@@ -43,8 +43,9 @@ def create_graph():
         logging.error(e)
         return jsonify(errno=RET.DBERR, errmsg='查询数据库异常')
     # 6. use neo4j create graph
-    neo4j.create()
-
+    # system_graph = neo4j
+    # system_graph.run('CREATE DATABASE subgraph_{}'.format(graph.id))
+    # logging.info(subgraph)
     # 6.save login status to session
     session['graph_id'] = graph.id
     
