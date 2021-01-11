@@ -1,0 +1,8 @@
+flask
+flask-script
+flask-sqlalchemy
+flask-session
+flask-wtf
+redis
+pymysql
+py2neo

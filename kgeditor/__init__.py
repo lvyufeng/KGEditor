@@ -1,12 +1,13 @@
 import redis
 import logging
+import pymysql
+
 from flask import Flask
 from config import config_map
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from flask_wtf import CSRFProtect
 from logging.handlers import RotatingFileHandler
-import pymysql
 pymysql.install_as_MySQLdb()
 
 # set log level
