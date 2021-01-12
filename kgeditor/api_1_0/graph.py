@@ -1,7 +1,7 @@
 from . import api
 from flask import jsonify, g, request, session
 from kgeditor.utils.common import login_required
-from kgeditor import db, neo4j
+from kgeditor import db, arango_conn
 from kgeditor.models import Graph
 from kgeditor.utils.response_code import RET
 from sqlalchemy.exc import IntegrityError
@@ -11,7 +11,9 @@ import logging
 @api.route('/create_graph', methods=['POST'])
 @login_required
 def create_graph():
-    # pass
+    """
+    create graph
+    """
     # get request json, return dict
     user_id = g.user_id
     req_dict = request.get_json()
@@ -42,7 +44,12 @@ def create_graph():
         db.session.rollback()
         logging.error(e)
         return jsonify(errno=RET.DBERR, errmsg='查询数据库异常')
-    # 6. use neo4j create graph
+    # 6. use arango create graph
+    try:
+        arango_conn.createDatabase(name="graph_{}".format(graph.id))
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='添加图数据库失败')
     # system_graph = neo4j
     # system_graph.run('CREATE DATABASE subgraph_{}'.format(graph.id))
     # logging.info(subgraph)
@@ -54,7 +61,11 @@ def create_graph():
 @api.route('/add_node', methods=['POST'])
 @login_required
 def add_node():
-    # pass
+    """
+    add node
+    """
+    # verify graph_id
+    # session
     return jsonify(errno=RET.OK, errmsg="删除成功")
 
 @api.route('/add_in_relation', methods=['POST'])
@@ -88,13 +99,17 @@ def change_nodel_relation():
 @login_required
 def list_graphs():
     # pass
+    ignore_list = ['_system']
     graph_list = []
-    query = 'SHOW DATABASES'
-    result = neo4j.keys()
+    try:
+        result = arango_conn.databases
+    except Exception as e:
+        return jsonify(errno=RET.DBERR, errmsg='图数据库查询异常')
     # result = neo4j.run(query)
-    logging.info(type(result))
-    # for item in result:
-    #     graph_list.append(item['name'])
+    logging.info(result)
+    for k, v in result.items():
+        if k not in ignore_list:
+            graph_list.append(k)
     return jsonify(errno=RET.OK, errmsg="查询成功", data=graph_list)
 
 @api.route('/get_node', methods=['POST'])
@@ -114,7 +129,30 @@ def get_neighbor():
 @login_required
 def delete_graph():
     # pass
-    return jsonify(errno=RET.OK, errmsg="删除成功")
+    user_id = g.user_id
+    req_dict = request.get_json()
+    graph_id = req_dict.get('graph_id')
+    if not graph_id:
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不完整")
+    try:
+        graph = Graph.query.filter_by(id=graph_id).first()
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+    else:
+        if graph is None:
+            return jsonify(errno=RET.DATAEXIST, errmsg='图谱不存在')
+    # 5.save graph info to db
+    try:
+        db.session.delete(graph)
+        db.session.commit()
+        url = f'{arango_conn.getURL()}/database/graph_{graph_id}'
+        arango_conn.session.delete(url)
+    except Exception as e:
+        db.session.rollback()
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='删除图谱失败')    
+    return jsonify(errno=RET.OK, errmsg="删除图谱成功")
 
 @api.route('/delete_node', methods=['POST'])
 @login_required

@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from flask_wtf import CSRFProtect
 from logging.handlers import RotatingFileHandler
-from py2neo import Graph, GraphService
+from pyArango.connection import *
 pymysql.install_as_MySQLdb()
 
 # set log level
@@ -25,7 +25,7 @@ logging.getLogger().addHandler(file_log_handler)
 
 db = SQLAlchemy()
 redis_store = None
-neo4j = None
+arango_conn = None
 
 def create_app(mode):
     """
@@ -44,9 +44,8 @@ def create_app(mode):
     global redis_store
     redis_store = redis.StrictRedis(host=config_cls.REDIS_HOST, port=config_cls.REDIS_PORT)
 
-    global neo4j
-    # neo4j = Graph(host=config_cls.NEO4J_HOST, port=config_cls.NEO4J_PORT, password=config_cls.NEO4J_PASSWD, encoding=config_cls.NEO4J_ENCODING)
-    neo4j = GraphService("bolt://{}:{}".format(config_cls.NEO4J_HOST, config_cls.NEO4J_PORT), password=config_cls.NEO4J_PASSWD)
+    global arango_conn
+    arango_conn = Connection(config_cls.ARANGO_URL, username=config_cls.ARANGO_USERNAME, password=config_cls.ARANGO_PASSWORD)
     # flask session, store session in redis
     Session(app)
 
