@@ -7,4 +7,4 @@ flask-migrate
 flask-cors
 redis
 pymysql
-py2neo
+pyArango

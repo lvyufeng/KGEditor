@@ -136,3 +136,6 @@ logs/
 
 # user migration folder
 migrations/
+
+bfg-1.13.1.jar
+config.py
