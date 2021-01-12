@@ -3,6 +3,11 @@ a simple knowledge graph edit system implemented by flask
 
 ### how to use
 
+#### 1.install databases
+1. mysql
+2. redis
+3. ArangoDB
+#### 2. configuration
 ```bash
 # rename config.example.py to config.py, and modify the configuration of your own dbs
 mv config.example.py to config.py

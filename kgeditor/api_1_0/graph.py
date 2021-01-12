@@ -100,6 +100,7 @@ def change_nodel_relation():
 @login_required
 def list_graphs():
     # pass
+    ignore_list = ['_system']
     graph_list = []
     user_id = g.user_id
     try:
