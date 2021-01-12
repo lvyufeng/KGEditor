@@ -8,9 +8,9 @@ class Config(object):
     # db
     MYSQL_HOST = 'localhost'
     MYSQL_PORT = '3306'
-    MYSQL_USER_NAME = 'root'
-    MYSQL_PASSWD = 'password'
-    SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}:{}/KGEditor'.format(MYSQL_USER_NAME, MYSQL_PASSWD, MYSQL_HOST, MYSQL_PASSWD)
+    MYSQL_USERNAME = 'root'
+    MYSQL_PASSWORD = 'password'
+    SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}:{}/KGEditor'.format(MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_PORT)
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     # redis
     REDIS_HOST = 'localhost'
@@ -21,11 +21,10 @@ class Config(object):
     SESSION_USE_SIGNER = True #hidden cookie session_id
     PERMANENT_SESSION_LIFETIME = 86400
 
-    # neo4j
-    NEO4J_HOST = 'localhost'
-    NEO4J_PORT = '7687'
-    NEO4J_PASSWD = 'password'
-    NEO4J_ENCODING = 'utf-8'
+    # ArangoDB
+    ARANGO_URL = 'http://localhost:8529'
+    ARANGO_USERNAME = 'root'
+    ARANGO_PASSWORD = 'password'
 
 class DevelopmentConfig(Config):
     """

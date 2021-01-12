@@ -54,7 +54,12 @@ class Graph(BaseModel, db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
     private = db.Column(db.Boolean, nullable=False)
     domain_id = db.Column(db.Integer, db.ForeignKey("domain.id"), nullable=False)
-
+    def to_dict(self):
+        return {
+            'graph_id': self.id,
+            'graph_name': self.name,
+            'private': self.private
+        }
 class Domain(BaseModel, db.Model):
     __tablename__ = 'domain'
     id = db.Column(db.Integer, primary_key=True)

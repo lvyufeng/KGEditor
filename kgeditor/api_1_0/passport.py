@@ -126,4 +126,4 @@ def check_login():
 @api.route('/session', methods=['DELETE'])
 def logout():
     session.clear()
-    return jsonify(errno=RET.OK, errmsg="OK")
+    return jsonify(errno=RET.OK, errmsg="退出成功")
