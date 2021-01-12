@@ -1,28 +1,31 @@
 # KGEditer
-a simple knowledge graph edit system implemented by flask
+a simple knowledge graph edit system backend implemented by flask
 
-### how to use
-
-#### 1.install databases
+### How to use
+#### 1.Install databases
 1. mysql
 2. redis
 3. ArangoDB
-#### 2. configuration
+#### 2. Configuration
 ```bash
+cd your_path_to_project
 # rename config.example.py to config.py, and modify the configuration of your own dbs
 mv config.example.py to config.py
+# create log folder
+mkdir logs
 # use manage.py to run
 python manage.py runserver
 ```
-### db design
+----
+### DB design
 
 1. User
 2. Domain
 3. Project
 4. Graph
 5. Partner_Project
-
-### db migration instructions
+----
+### DB migration instructions
 
 ```bash
 # init db

@@ -44,8 +44,34 @@ def add_domain():
     # 6.save login status to session
     # session['domain_id'] = domain.id
     
-    return jsonify(errno=RET.OK, errmsg="新建图谱成功")
+    return jsonify(errno=RET.OK, errmsg="新建领域成功")
 
+@api.route('/delete_domain', methods=['POST'])
+@login_required
+def delete_domain():
+    # pass
+    user_id = g.user_id
+    req_dict = request.get_json()
+    domain_id = req_dict.get('domain_id')
+    if not domain_id:
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不完整")
+    try:
+        domain = Domain.query.filter_by(id=domain_id, creator_id=user_id).first()
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+    else:
+        if domain is None:
+            return jsonify(errno=RET.DATAEXIST, errmsg='领域不存在')
+    # 5.save graph info to db
+    try:
+        db.session.delete(domain)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='删除领域失败')    
+    return jsonify(errno=RET.OK, errmsg="删除领域成功")
 
 @api.route('/list_domain', methods=['GET'])
 @login_required

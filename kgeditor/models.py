@@ -19,8 +19,8 @@ class User(BaseModel, db.Model):
     mobile = db.Column(db.String(11), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     name = db.Column(db.String(32), unique=True, nullable=False)
-    graphs = db.relationship('Graph', backref='creator')
-    projects = db.relationship('Project', secondary=project_partner)
+    graphs = db.relationship('Graph', backref='user_profile')
+    # projects = db.relationship('Project', secondary=project_partner)
     
     @property
     def password(self):
@@ -39,7 +39,7 @@ class Project(BaseModel, db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
     name = db.Column(db.String(32), unique=True, nullable=False)
     partners = db.relationship('User', secondary=project_partner)
-
+    graphs = db.relationship('Graph')
 
 # class DataBase(BaseModel, db.Model):
 #     pass
@@ -54,6 +54,7 @@ class Graph(BaseModel, db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
     private = db.Column(db.Boolean, nullable=False)
     domain_id = db.Column(db.Integer, db.ForeignKey("domain.id"), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey("project.id"), nullable=True)
     def to_dict(self):
         return {
             'graph_id': self.id,

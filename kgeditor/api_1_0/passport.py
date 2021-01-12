@@ -38,6 +38,7 @@ def register():
     try:
         user = User.query.filter_by(mobile=mobile).first()
     except Exception as e:
+        db.session.rollback()
         logging.error(e)
         return jsonify(errno=RET.DBERR, errmsg='数据库异常')
     else:
@@ -113,7 +114,7 @@ def login():
     session['name'] = user.name
     session['mobile'] = user.mobile
     session['user_id'] = user.id
-
+    
     return jsonify(errno=RET.OK, errmsg="登录成功")
 
 @api.route('/session', methods=["GET"])

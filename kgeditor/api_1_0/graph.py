@@ -55,7 +55,7 @@ def create_graph():
     # system_graph.run('CREATE DATABASE subgraph_{}'.format(graph.id))
     # logging.info(subgraph)
     # 6.save login status to session
-    session['graph_id'] = graph.id
+    # session['graph_id'] = graph.id
     
     return jsonify(errno=RET.OK, errmsg="新建图谱成功")
 
@@ -100,7 +100,6 @@ def change_nodel_relation():
 @login_required
 def list_graphs():
     # pass
-    ignore_list = ['_system']
     graph_list = []
     user_id = g.user_id
     try:
