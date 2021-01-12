@@ -42,7 +42,7 @@ def add_domain():
     # 6. use neo4j create graph
 
     # 6.save login status to session
-    session['domain_id'] = domain.id
+    # session['domain_id'] = domain.id
     
     return jsonify(errno=RET.OK, errmsg="新建图谱成功")
 
@@ -62,3 +62,22 @@ def list_domain():
         domain_dict_list.append(domain.to_dict())
     
     return jsonify(errno=RET.OK, errmsg="OK", data=domain_dict_list)
+
+@api.route('/rename_domain', methods=['POST'])
+@login_required
+def rename_domain():
+    # pass
+    # get request json, return dict
+    req_dict = request.get_json()
+    domain_id = req_dict.get('domain_id')
+    name = req_dict.get('name')
+    if not all([domain_id, name]):
+        return jsonify(errno=RET.PARAMERR, errmsg='参数错误')
+    try:
+        domain = Domain.query.filter_by(id=domain_id).first()
+        domain.name = name
+        db.session.commit()
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+    return jsonify(errno=RET.OK, errmsg="修改成功")
