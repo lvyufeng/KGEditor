@@ -59,6 +59,14 @@ def create_graph():
     
     return jsonify(errno=RET.OK, errmsg="新建图谱成功")
 
+# add entity type
+
+# add relation type
+
+# list entity type
+
+# list relation type
+
 @api.route('/add_node', methods=['POST'])
 @login_required
 def add_node():

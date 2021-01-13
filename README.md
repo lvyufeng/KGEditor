@@ -1,4 +1,4 @@
-# KGEditer
+# KGEditor
 a simple knowledge graph edit system backend implemented by flask
 
 ### How to use

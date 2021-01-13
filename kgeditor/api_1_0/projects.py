@@ -60,11 +60,36 @@ def add_project():
     return jsonify(errno=RET.OK, errmsg="新建项目成功")
 
 
-@api.route('/add_graph', methods=['POST'])
+@api.route('/add_graph_to_project', methods=['POST'])
 @login_required
-def add_graph():
+def add_graph_to_project():
+    """
+    param:  project_id
+            graph_id
+    """
     # pass
-    return jsonify(errno=RET.OK, errmsg="添加成功")
+    req_dict = request.get_json()
+    project_id = req_dict['project_id']
+    graph_id = req_dict['graph_id']
+    try:
+        project = Project.query.filter_by(id=project_id).first()
+        graph = Graph.query.filter_by(id=graph_id).first()
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+    else:
+        if not all([project, graph]):
+            return jsonify(errno=RET.USERERR, errmsg='用户无权操作项目或图谱')
+    if graph.project_id is not None:
+            return jsonify(errno=RET.DATAEXIST, errmsg='图谱已绑定项目')
+    try:
+        graph.project_id = project.id
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+    return jsonify(errno=RET.OK, errmsg="绑定成功")
 
 @api.route('/add_partner', methods=['POST'])
 @login_required
@@ -76,11 +101,20 @@ def add_partner():
 
 
 # retrieval
-@api.route('/list_projects', methods=['POST'])
+@api.route('/list_projects', methods=['GET'])
 @login_required
 def list_projects():
-    # pass
-    return jsonify(errno=RET.OK, errmsg="删除成功")
+    project_list = []
+    user_id = g.user_id
+    try:
+        projects = Project.query.filter_by(creator_id=user_id).all()
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+
+    for project in projects:
+        project_list.append(project.to_dict())
+    return jsonify(errno=RET.OK, errmsg="查询成功", data=project_list)
 
 @api.route('/list_unlinked_graphs', methods=['POST'])
 @login_required

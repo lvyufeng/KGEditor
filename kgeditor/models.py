@@ -40,7 +40,11 @@ class Project(BaseModel, db.Model):
     name = db.Column(db.String(32), unique=True, nullable=False)
     partners = db.relationship('User', secondary=project_partner)
     graphs = db.relationship('Graph')
-
+    def to_dict(self):
+        return {
+            'project_id': self.id,
+            'project_name': self.name,
+        }
 # class DataBase(BaseModel, db.Model):
 #     pass
 
