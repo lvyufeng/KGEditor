@@ -11,7 +11,7 @@ from kgeditor.utils.response_code import RET
 from sqlalchemy.exc import IntegrityError
 import logging
 from pyArango.consts import *
-
+from pyArango.theExceptions import CreationError
 @api.route('list_documents', methods=['POST'])
 @login_required
 @verify_graph
@@ -37,3 +37,25 @@ def list_edges():
     # logging.info(graph_db.collections)
     return jsonify(errno=RET.OK, errmsg="OK", data=edges)
 
+@api.route('add_document', methods=['POST'])
+@login_required
+@verify_graph
+def add_document():
+    documents = []
+    graph_db = arango_conn['graph_{}'.format(g.graph_id)]
+    req_dict = request.get_json()
+    properties = req_dict.get('properties')
+    types = req_dict.get('type')
+    if properties is None:
+        return jsonify(errno=RET.PARAMERR, errmsg='参数不完整')
+    if not isinstance(properties, dict):
+        return jsonify(errno=RET.PARAMERR, errmsg='参数类型错误')
+    if 'name' not in properties or 'type' is None:
+        return jsonify(errno=RET.PARAMERR, errmsg='参数不完整')
+    try:
+        msg = graph_db.createCollection(className=types, **properties)    
+    except CreationError as e:
+        logging.info(e)
+        return jsonify(error=RET.DATAEXIST, errmsg="Collection已存在")
+    else:
+        return jsonify(errno=RET.OK, errmsg="创建Collection成功")
