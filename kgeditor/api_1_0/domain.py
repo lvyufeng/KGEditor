@@ -2,15 +2,19 @@ import logging
 from . import api
 from flask import jsonify, g, request, session
 from kgeditor.utils.common import login_required
-from kgeditor import db
+from kgeditor import db, arango_conn
 from kgeditor.models import Domain
 from kgeditor.utils.response_code import RET
 from sqlalchemy.exc import IntegrityError
+from pyArango.theExceptions import CreationError
 
 @api.route('/add_domain', methods=['POST'])
 @login_required
 def add_domain():
-    # pass
+    """
+    add domain
+    params: name
+    """
     # get request json, return dict
     user_id = g.user_id
     req_dict = request.get_json()
@@ -24,25 +28,18 @@ def add_domain():
         return jsonify(errno=RET.DBERR, errmsg='数据库异常')
     else:
         if domain is not None:
-            return jsonify(errno=RET.DATAEXIST, errmsg='{name}领域已存在')
+            return jsonify(errno=RET.DATAEXIST, errmsg='"{}"领域已存在'.format(name))
     # 5.save graph info to db
     domain = Domain(name=name, creator_id=user_id)
     try:
         db.session.add(domain)
         db.session.commit()
-    except IntegrityError as e:
-        db.session.rollback()
-        # phone number duplicate
-        logging.error(e)
-        return jsonify(errno=RET.DATAEXIST, errmsg='领域已存在')
+        arango_conn.createDatabase(name="domain_{}".format(domain.id))
     except Exception as e:
         db.session.rollback()
         logging.error(e)
-        return jsonify(errno=RET.DBERR, errmsg='查询数据库异常')
-    # 6. use neo4j create graph
-
-    # 6.save login status to session
-    # session['domain_id'] = domain.id
+        return jsonify(errno=RET.DBERR, errmsg='添加领域失败')
+        # 6. use neo4j create graph
     
     return jsonify(errno=RET.OK, errmsg="新建领域成功")
 
@@ -67,10 +64,12 @@ def delete_domain():
     try:
         db.session.delete(domain)
         db.session.commit()
+        url = f'{arango_conn.getURL()}/database/domain_{domain.id}'
+        arango_conn.session.delete(url)
     except Exception as e:
         db.session.rollback()
         logging.error(e)
-        return jsonify(errno=RET.DBERR, errmsg='删除领域失败')    
+        return jsonify(errno=RET.DBERR, errmsg='删除领域失败')     
     return jsonify(errno=RET.OK, errmsg="删除领域成功")
 
 @api.route('/list_domain', methods=['GET'])

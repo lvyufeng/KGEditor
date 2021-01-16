@@ -8,6 +8,7 @@ from kgeditor.utils.common import login_required, verify_graph
 from kgeditor import db, arango_conn
 from kgeditor.models import Graph
 from kgeditor.utils.response_code import RET
+from kgeditor.utils.type_dict import type_dict
 from sqlalchemy.exc import IntegrityError
 import logging
 from pyArango.consts import *
@@ -16,26 +17,16 @@ from pyArango.theExceptions import CreationError
 @login_required
 @verify_graph
 def list_documents():
+    req_dict = request.get_json()
     documents = []
     graph_db = arango_conn['graph_{}'.format(g.graph_id)]
-    
+    types = type_dict.get(req_dict.get('type'))
+    if types is None:
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不正确") 
     for name, collection in graph_db.collections.items():
-        if collection.type == COLLECTION_DOCUMENT_TYPE and not name.startswith('_'):
+        if collection.type == types and not name.startswith('_'):
             documents.append(name)
     return jsonify(errno=RET.OK, errmsg="OK", data=documents)
-
-@api.route('list_edges', methods=['POST'])
-@login_required
-@verify_graph
-def list_edges():
-    graph_db = arango_conn['graph_{}'.format(g.graph_id)]
-    # graph_db.collections
-    edges = []
-    for name, collection in graph_db.collections.items():
-        if collection.type == COLLECTION_EDGE_TYPE:
-            edges.append(name)
-    # logging.info(graph_db.collections)
-    return jsonify(errno=RET.OK, errmsg="OK", data=edges)
 
 @api.route('add_document', methods=['POST'])
 @login_required
