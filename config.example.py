@@ -26,6 +26,10 @@ class Config(object):
     ARANGO_USERNAME = 'root'
     ARANGO_PASSWORD = 'password'
 
+    # uploads
+    UPLOADED_DATA_DEST = '/tmp/'
+    UPLOADED_DATA_ALLOW = ['csv', 'json']
+
 class DevelopmentConfig(Config):
     """
     Dev environment
