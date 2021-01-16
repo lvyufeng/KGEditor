@@ -5,6 +5,7 @@ flask-session
 flask-wtf
 flask-migrate
 flask-cors
+flask-uploads
 redis
 pymysql
 pyArango

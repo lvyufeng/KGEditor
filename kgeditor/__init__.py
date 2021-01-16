@@ -1,13 +1,13 @@
 import redis
 import logging
 import pymysql
-
 from flask import Flask
 from flask_cors import CORS
 from config import config_map
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from flask_wtf import CSRFProtect
+from flask_uploads import DATA, UploadSet, configure_uploads
 from logging.handlers import RotatingFileHandler
 from pyArango.connection import *
 pymysql.install_as_MySQLdb()
@@ -52,6 +52,9 @@ def create_app(mode):
     # csrf protection
     # CSRFProtect(app)
 
+    # configure uploads
+    data = UploadSet('data', DATA)
+    configure_uploads(app, data)
     from kgeditor import api_1_0
     app.register_blueprint(api_1_0.api, url_prefix="/api/v1.0")
     return app

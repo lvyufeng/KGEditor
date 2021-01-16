@@ -1,6 +1,6 @@
 from . import api
 from flask import jsonify, g, request, session
-from kgeditor.utils.common import login_required, verify_graph
+from kgeditor.utils.common import login_required, verify_domain
 from kgeditor import db, arango_conn
 from kgeditor.models import Graph
 from kgeditor.utils.response_code import RET
@@ -21,36 +21,36 @@ def create_graph():
     name = req_dict.get('name')
     private = req_dict.get('private')
     domain_id = req_dict.get('domain_id')
-    logging.info([name, private, domain_id])
-    if None in [name, private, domain_id]:
-        return jsonify(errno=RET.PARAMERR, errmsg="参数不完整")
-    try:
-        graph = Graph.query.filter_by(name=name).first()
-    except Exception as e:
-        logging.error(e)
-        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
-    else:
-        if graph is not None:
-            return jsonify(errno=RET.DATAEXIST, errmsg='"{}"图谱已存在'.format(name))
-    # 5.save graph info to db
-    graph = Graph(name=name, private=private, creator_id=user_id, domain_id=domain_id)
-    try:
-        db.session.add(graph)
-        db.session.commit()
-        arango_db = arango_conn["domain_{}".format(domain_id)]
-        arango_db.createGraph("graph_{}".format(graph.id))
-    except IntegrityError as e:
-        db.session.rollback()
-        # phone number duplicate
-        logging.error(e)
-        return jsonify(errno=RET.DATAEXIST, errmsg='图谱已存在')
-    except CreationError as e:
-        logging.error(e)
-        return jsonify(errno=RET.DBERR, errmsg='创建图谱失败')
-    except Exception as e:
-        db.session.rollback()
-        logging.error(e)
-        return jsonify(errno=RET.DBERR, errmsg='查询数据库异常')
+    # logging.info([name, private, domain_id])
+    # if None in [name, private, domain_id]:
+    #     return jsonify(errno=RET.PARAMERR, errmsg="参数不完整")
+    # try:
+    #     graph = Graph.query.filter_by(name=name).first()
+    # except Exception as e:
+    #     logging.error(e)
+    #     return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+    # else:
+    #     if graph is not None:
+    #         return jsonify(errno=RET.DATAEXIST, errmsg='"{}"图谱已存在'.format(name))
+    # # 5.save graph info to db
+    # graph = Graph(name=name, private=private, creator_id=user_id, domain_id=domain_id)
+    # try:
+    #     db.session.add(graph)
+    #     db.session.commit()
+    #     arango_db = arango_conn["domain_{}".format(domain_id)]
+    #     arango_db.createGraph("graph_{}".format(graph.id))
+    # except IntegrityError as e:
+    #     db.session.rollback()
+    #     # phone number duplicate
+    #     logging.error(e)
+    #     return jsonify(errno=RET.DATAEXIST, errmsg='图谱已存在')
+    # except CreationError as e:
+    #     logging.error(e)
+    #     return jsonify(errno=RET.DBERR, errmsg='创建图谱失败')
+    # except Exception as e:
+    #     db.session.rollback()
+    #     logging.error(e)
+    #     return jsonify(errno=RET.DBERR, errmsg='查询数据库异常')
     
     return jsonify(errno=RET.OK, errmsg="新建图谱成功")
 
@@ -99,14 +99,19 @@ def change_nodel_relation():
 
 
 # retrieval
-@api.route('/list_graphs', methods=['GET'])
+@api.route('/list_graphs', methods=['POST'])
 @login_required
 def list_graphs():
     # pass
     graph_list = []
     user_id = g.user_id
+    req_dict = request.get_json()
+    domain_id = req_dict.get('domain_id')   
     try:
-        graphs = Graph.query.filter_by(creator_id=user_id).all()
+        if domain_id == None:
+            graphs = Graph.query.filter_by(creator_id=user_id).all()
+        else:
+            graphs = Graph.query.filter_by(creator_id=user_id, domain_id=domain_id).all()
     except Exception as e:
         logging.error(e)
         return jsonify(errno=RET.DBERR, errmsg='数据库异常')
@@ -115,17 +120,6 @@ def list_graphs():
         graph_list.append(graph.to_dict())
     return jsonify(errno=RET.OK, errmsg="查询成功", data=graph_list)
 
-@api.route('/list_subgraphs', methods=['POST'])
-@login_required
-@verify_graph
-def list_subgraphs():
-    # pass
-    subgraph_list = []
-    graph_db = arango_conn['graph_{}'.format(g.graph_id)]
-    for name, graph in graph_db.graphs.items():
-        # if collection.type == types and not name.startswith('_'):
-        subgraph_list.append(name)
-    return jsonify(errno=RET.OK, errmsg="查询成功", data=subgraph_list)
 
 @api.route('/get_node', methods=['POST'])
 @login_required
