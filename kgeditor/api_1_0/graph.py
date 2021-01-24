@@ -1,12 +1,14 @@
 from . import api
 from flask import jsonify, g, request, session
-from kgeditor.utils.common import login_required, verify_domain
+from kgeditor.utils.common import login_required, verify_domain, verify_graph
+from kgeditor.utils.data import text2json
 from kgeditor import db, arango_conn
 from kgeditor.models import Graph
 from kgeditor.utils.response_code import RET
 from sqlalchemy.exc import IntegrityError
 import logging
 from pyArango.theExceptions import *
+import json
 # CRUD
 # create
 @api.route('/create_graph', methods=['POST'])
@@ -133,6 +135,37 @@ def get_neighbor():
     # pass
     return jsonify(errno=RET.OK, errmsg="删除成功")
 
+@api.route('/show_vertex', methods=['GET'])
+@login_required
+def show_graph():
+    graph_id = request.args.get('graph_id')
+    try:
+        graph = Graph.query.filter_by(id=graph_id, creator_id=g.user_id).first()
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+    else:
+        if graph is None:
+            return jsonify(errno=RET.DBERR, errmsg='图谱不存在或用户无编辑权限')
+
+    domain_db = arango_conn['domain_{}'.format(graph.domain_id)]
+    graph = domain_db.graphs['graph_{}'.format(graph_id)]
+    logging.info(graph.getURL())
+    url = f'{graph.getURL()}/vertex'
+    resp = arango_conn.session.get(url)
+    if resp.status_code != 200:
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+    data = text2json(resp.text)
+
+    # collections = []
+    # edges = []
+    # for k, v in graph.definitions.items():
+    #     edges.append(k)
+    #     collections.extend(v.fromCollections)
+    #     collections.extend(v.toCollections)
+    # collections = list(set(collections))
+    # collections.extend(graph._orphanedCollections)
+    return jsonify(errno=RET.OK, errmsg="OK", data=data['collections'])
 # delete
 @api.route('/delete_graph', methods=['POST'])
 @login_required

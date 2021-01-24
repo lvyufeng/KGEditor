@@ -1,7 +1,7 @@
 from flask import session, jsonify, g, request
 from kgeditor.utils.response_code import RET
 import functools
-from kgeditor.models import Domain
+from kgeditor.models import Domain, Graph
 import logging
 # verify login status
 def login_required(view_func):
@@ -33,3 +33,23 @@ def verify_domain(view_func):
             g.domain_id = domain_id
             return view_func(*args, **kwargs)
     return wrapper            
+
+# verify graph
+def verify_graph(view_func):
+    @functools.wraps(view_func)
+    def wrapper(*args, **kwargs):
+        req_dict = request.get_json()
+        graph_id = req_dict.get('graph_id')
+        # validate permission
+        try:
+            graph = Graph.query.filter_by(id=graph_id, creator_id=g.user_id).first()
+        except Exception as e:
+            logging.error(e)
+            return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+        else:
+            if graph is None:
+                return jsonify(errno=RET.DBERR, errmsg='图谱不存在或用户无编辑权限')
+            g.graph_id = graph_id
+            g.domain_id = graph.domain_id
+            return view_func(*args, **kwargs)
+    return wrapper
