@@ -30,6 +30,9 @@ class Config(object):
     UPLOADED_DATA_DEST = '/tmp/'
     UPLOADED_DATA_ALLOW = ['csv', 'json']
 
+    # docs
+    API_DOC_MEMBER = ['api']
+    
 class DevelopmentConfig(Config):
     """
     Dev environment

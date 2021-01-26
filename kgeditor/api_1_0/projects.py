@@ -12,7 +12,7 @@ from kgeditor import db, redis_store, constants
 @api.route('/add_project', methods=['POST'])
 @login_required
 def add_project():
-    """
+    """新建项目
     add project
     """
     user_id = g.user_id
@@ -63,7 +63,7 @@ def add_project():
 @api.route('/add_graph_to_project', methods=['POST'])
 @login_required
 def add_graph_to_project():
-    """
+    """添加图谱到项目
     param:  project_id
             graph_id
     """
@@ -94,6 +94,9 @@ def add_graph_to_project():
 @api.route('/add_partner', methods=['POST'])
 @login_required
 def add_partner():
+    """添加协作者(Todo)
+    
+    """
     # pass
     return jsonify(errno=RET.OK, errmsg="添加成功")
 
@@ -104,6 +107,9 @@ def add_partner():
 @api.route('/list_projects', methods=['GET'])
 @login_required
 def list_projects():
+    """项目列表
+    
+    """
     project_list = []
     user_id = g.user_id
     try:
@@ -119,6 +125,8 @@ def list_projects():
 @api.route('/list_unlinked_graphs', methods=['POST'])
 @login_required
 def list_unlinked_graphs():
+    """Todo
+    """
     # pass
     return jsonify(errno=RET.OK, errmsg="删除成功")
 
@@ -126,17 +134,26 @@ def list_unlinked_graphs():
 @api.route('/delete_project', methods=['GET'])
 @login_required
 def delete_project():
+    """删除项目
+    
+    """
     # pass
     return jsonify(errno=RET.OK, errmsg="删除成功")
 
 @api.route('/remove_partner', methods=['POST'])
 @login_required
 def remove_partner():
+    """删除协作者
+    
+    """
     # pass
     return jsonify(errno=RET.OK, errmsg="添加成功")
 
 @api.route('/remove_graph', methods=['POST'])
 @login_required
 def remove_graph():
+    """移除图谱
+    
+    """
     # pass
     return jsonify(errno=RET.OK, errmsg="添加成功")
