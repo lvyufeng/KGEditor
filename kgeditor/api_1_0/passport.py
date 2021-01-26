@@ -8,9 +8,17 @@ from kgeditor import db, redis_store, constants
 from sqlalchemy.exc import IntegrityError
 
 @api.route('/users', methods=['post'])
-def register():
-    """
-    register user
+def users():
+    """注册用户
+    
+    Args:
+        mobile:     注册手机号码
+        name:       用户名
+        password:   密码
+        password2:  确认密码
+    Returns: 
+        errno:      错误代码
+        errmsg:     错误信息
     """
     # get request json, return dict
     req_dict = request.get_json()
@@ -69,7 +77,7 @@ def register():
 
 @api.route("/session", methods=['POST'])
 def login():
-    """
+    """用户登录
     user login
     """
     # get parameter
@@ -119,6 +127,9 @@ def login():
 
 @api.route('/session', methods=["GET"])
 def check_login():
+    """登录校验
+    
+    """
     name = session.get('name')
     if name is not None:
         return jsonify(errno=RET.OK, errmsg='true', data={'name':name})
@@ -126,5 +137,12 @@ def check_login():
 
 @api.route('/session', methods=['DELETE'])
 def logout():
+    """退出登录
+    Args:
+        None
+    Return:
+        errno: RET.OK
+        errmsg: 退出成功
+    """
     session.clear()
     return jsonify(errno=RET.OK, errmsg="退出成功")
