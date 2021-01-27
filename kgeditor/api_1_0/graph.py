@@ -1,7 +1,6 @@
 from . import api
 from flask import jsonify, g, request, session
 from kgeditor.utils.common import login_required, verify_domain, verify_graph
-from kgeditor.utils.data import text2json
 from kgeditor import db, arango_conn
 from kgeditor.models import Graph
 from kgeditor.utils.response_code import RET
@@ -192,6 +191,21 @@ def traversal():
 
     pass
 
+@api.route('/show_graph', methods=['POST'])
+@login_required
+@verify_graph
+def show_graph():
+    domain_db = arango_conn['domain_{}'.format(g.domain_id)]
+    graph = domain_db.graphs['graph_{}'.format(g.graph_id)]
+    collections = []
+    edges = []
+    for k, v in graph.definitions.items():
+        edges.append(k)
+        collections.extend(v.fromCollections)
+        collections.extend(v.toCollections)
+    collections = list(set(collections))
+    collections.extend(graph._orphanedCollections)
+    return jsonify(errno=RET.OK, errmsg="OK", data={'collections': collections, 'edges':edges})
 # delete
 @api.route('/delete_graph', methods=['POST'])
 @login_required
