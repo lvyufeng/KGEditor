@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from flask_wtf import CSRFProtect
 from flask_uploads import DATA, UploadSet, configure_uploads
+from flask_docs import ApiDoc
 from logging.handlers import RotatingFileHandler
 from pyArango.connection import *
 pymysql.install_as_MySQLdb()
@@ -55,6 +56,8 @@ def create_app(mode):
     # configure uploads
     data = UploadSet('data', DATA)
     configure_uploads(app, data)
+
+    ApiDoc(app)
     from kgeditor import api_1_0
     app.register_blueprint(api_1_0.api, url_prefix="/api/v1.0")
     return app

@@ -11,9 +11,15 @@ from pyArango.theExceptions import CreationError
 @api.route('/add_domain', methods=['POST'])
 @login_required
 def add_domain():
-    """
-    add domain
-    params: name
+    """添加领域
+
+    Add some data in this routing
+
+    Args:
+        name: 
+
+    Returns:
+        pass
     """
     # get request json, return dict
     user_id = g.user_id
@@ -43,7 +49,7 @@ def add_domain():
     
     return jsonify(errno=RET.OK, errmsg="新建领域成功")
 
-@api.route('/delete_domain', methods=['POST'])
+@api.route('/delete_domain', methods=['DELETE'])
 @login_required
 def delete_domain():
     # pass
