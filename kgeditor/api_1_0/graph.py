@@ -182,17 +182,41 @@ def vertex_list():
     data = collection.fetchAll(limit = page_len, skip = page_len * (page - 1))
     pages = int(count / page_len) + 1
     # logging.info(type(data))
-    return jsonify(errno=RET.OK, errmsg="OK", data={'vertex': data.result, 'pages': pages})
+    return jsonify(errno=RET.OK, errmsg="OK", data={'vertex': data.result, 'pages': pages, 'count':count})
 
-@api.route('/traversal', methods=['POST'])
+@api.route('/traverse', methods=['POST'])
 @login_required
 def traversal():
     """图遍历
     
+    Args:
+        startVertex: the start vertex to show, eg. "persons/alice"
+        direction: direction for traversal
+            if set, must be either "outbound", "inbound", or "any"
+            if not set, the expander attribute must be specified
+        maxDepth: visits only nodes in at most the given depth
+        minDepth: visits only nodes in at least the given depth
     """
+    graph_id = session.get('graph_id')
+    domain_id = session.get('domain_id')
+    if not all([graph_id, domain_id]):
+        return jsonify(errno=RET.SESSIONERR, errmsg="未选择指定的图谱")
+    logging.info(graph_id)
+    logging.info(domain_id)
+    domain_db = arango_conn['domain_{}'.format(domain_id)]
+    db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
     req_dict = request.get_json()
+    startVertex = req_dict.pop('startVertex')
+    direction = req_dict.get('direction')
+    maxDepth = req_dict.get('maxDepth')
+    minDepth = req_dict.get('minDepth')
+    logging.info(req_dict)
+    # logging.info()
+    req_dict["uniqueness"] =  {"vertices": "global", "edges": "global"}
 
-    pass
+    data = db_graph.traverse(startVertex, **req_dict)
+
+    return jsonify(errno=RET.OK, errmsg="OK", data=data['visited'])
 
 @api.route('/show_graph', methods=['POST'])
 @login_required
