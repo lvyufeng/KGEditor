@@ -63,7 +63,8 @@ class Graph(BaseModel, db.Model):
         return {
             'graph_id': self.id,
             'graph_name': self.name,
-            'private': self.private
+            'private': self.private,
+            'domain_id': self.domain_id
         }
 class Domain(BaseModel, db.Model):
     __tablename__ = 'domain'
