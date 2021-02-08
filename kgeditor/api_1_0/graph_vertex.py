@@ -30,7 +30,7 @@ def list_vertex_collections(domain_id, graph_id):
     data = text2json(resp.text)
     return jsonify(errno=RET.OK, errmsg="OK", data=data['collections'])
 
-# list one vertex collection
+# list vertex collection by id
 @api.route('/<int:domain_id>/graph/<int:graph_id>/vertex/<string:collection>', methods=['GET'])
 @login_required
 @verify_graph
@@ -63,23 +63,22 @@ def list_one_collection(domain_id, graph_id, collection):
 
     return jsonify(errno=RET.OK, errmsg="OK", data={'vertex': data.result, 'pages': pages, 'count':count})
 
+# add vertex
 @api.route('/<int:domain_id>/graph/<int:graph_id>/vertex/<collection>', methods=['POST'])
 @login_required
 @verify_graph
-def add_node(domain_id, graph_id, collection):
+def add_vetex(domain_id, graph_id, collection):
     """添加节点
     add node
     """
-    # verify graph_id
-    # session
     domain_db = arango_conn['domain_{}'.format(domain_id)]
     db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
     req = request.get_json()
-    key = req['key']
-    attribute = req['attribute']
-    attribute['_key'] = key
+    name = req['name']
+    if name is None:
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
     try:
-        db_graph.createVertex(collection, attribute)
+        db_graph.createVertex(collection, req)
     except CreationError as e:
         logging.error(e)
         return jsonify(errno=RET.DATAEXIST, errmsg="添加节点失败")
@@ -88,9 +87,30 @@ def add_node(domain_id, graph_id, collection):
         return jsonify(errno=RET.DBERR, errmsg="添加节点失败")
     return jsonify(errno=RET.OK, errmsg="添加节点成功")
 
+# update vetex
+@api.route('/<int:domain_id>/graph/<int:graph_id>/vertex/<collection>/<vertex>', methods=['PATCH'])
+@login_required
+def update_vetex(domain_id, graph_id, collection, vertex):
+    # pass
+    domain_db = arango_conn['domain_{}'.format(domain_id)]
+    db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
+    url = "%s/vertex/%s/%s" % (db_graph.getURL(), collection, vertex)
+    req = request.get_json()
+    if not req:
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    try:
+        r = db_graph.connection.session.patch(url, data = json.dumps(req, default=str))        
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="修改失败")
+    if r.status_code == 200 or r.status_code == 202:
+        return jsonify(errno=RET.OK, errmsg="修改成功")
+    return jsonify(errno=RET.DBERR, errmsg="修改失败")
+
+# delete vetex
 @api.route('/<int:domain_id>/graph/<int:graph_id>/vertex/<collection>/<vertex>', methods=['DELETE'])
 @login_required
-def delete_node(domain_id, graph_id, collection, vertex):
+def delete_vetex(domain_id, graph_id, collection, vertex):
     # pass
     domain_db = arango_conn['domain_{}'.format(domain_id)]
     db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
@@ -100,5 +120,23 @@ def delete_node(domain_id, graph_id, collection, vertex):
         db_graph.deleteVertex(document)
     except Exception as e:
         logging.error(e)
-        return jsonify(errno=RET.OK, errmsg="删除失败")
+        return jsonify(errno=RET.DBERR, errmsg="删除失败")
     return jsonify(errno=RET.OK, errmsg="删除成功")
+
+
+# get vetex
+@api.route('/<int:domain_id>/graph/<int:graph_id>/vertex/<collection>/<vertex>', methods=['GET'])
+@login_required
+def get_vetex(domain_id, graph_id, collection, vertex):
+    domain_db = arango_conn['domain_{}'.format(domain_id)]
+    db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
+    url = "%s/vertex/%s/%s" % (db_graph.getURL(), collection, vertex)
+    try:
+        r = db_graph.connection.session.get(url)        
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="查询失败")
+    if r.status_code == 200:
+        data = r.json()
+        return jsonify(errno=RET.OK, errmsg="查询成功", data=data['vertex'])
+    return jsonify(errno=RET.DBERR, errmsg="查询失败")

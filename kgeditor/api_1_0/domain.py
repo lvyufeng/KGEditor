@@ -49,6 +49,22 @@ def add_domain():
     
     return jsonify(errno=RET.OK, errmsg="新建领域成功")
 
+@api.route('/domain', methods=['GET'])
+@login_required
+def list_domain():
+    # pass
+    # get request json, return dict
+    try:
+        domain_list = Domain.query.all()
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+    domain_dict_list = []
+    for domain in domain_list:
+        domain_dict_list.append(domain.to_dict())
+    
+    return jsonify(errno=RET.OK, errmsg="OK", data=domain_dict_list)
+
 @api.route('/domain/<domain_id>', methods=['DELETE'])
 @login_required
 def delete_domain(domain_id):
@@ -77,23 +93,7 @@ def delete_domain(domain_id):
         return jsonify(errno=RET.DBERR, errmsg='删除领域失败')     
     return jsonify(errno=RET.OK, errmsg="删除领域成功")
 
-@api.route('/domain', methods=['GET'])
-@login_required
-def list_domain():
-    # pass
-    # get request json, return dict
-    try:
-        domain_list = Domain.query.all()
-    except Exception as e:
-        logging.error(e)
-        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
-    domain_dict_list = []
-    for domain in domain_list:
-        domain_dict_list.append(domain.to_dict())
-    
-    return jsonify(errno=RET.OK, errmsg="OK", data=domain_dict_list)
-
-@api.route('/domain/<domain_id>', methods=['PUT'])
+@api.route('/domain/<domain_id>', methods=['PATCH'])
 @login_required
 def rename_domain(domain_id):
     req_dict = request.get_json()
