@@ -38,18 +38,16 @@ def verify_domain(view_func):
 def verify_graph(view_func):
     @functools.wraps(view_func)
     def wrapper(*args, **kwargs):
-        req_dict = request.get_json()
-        graph_id = req_dict.get('graph_id')
         # validate permission
+        logging.info(kwargs)
         try:
-            graph = Graph.query.filter_by(id=graph_id, creator_id=g.user_id).first()
+            graph = Graph.query.filter_by(id=kwargs['graph_id'], domain_id=kwargs['domain_id'], creator_id=g.user_id).first()
         except Exception as e:
             logging.error(e)
             return jsonify(errno=RET.DBERR, errmsg='数据库异常')
         else:
             if graph is None:
                 return jsonify(errno=RET.DBERR, errmsg='图谱不存在或用户无编辑权限')
-            g.graph_id = graph_id
-            g.domain_id = graph.domain_id
+            g.graph = graph
             return view_func(*args, **kwargs)
     return wrapper

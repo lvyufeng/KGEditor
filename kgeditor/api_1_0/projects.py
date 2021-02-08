@@ -9,7 +9,7 @@ from kgeditor import db, redis_store, constants
 
 # CRUD
 # create
-@api.route('/add_project', methods=['POST'])
+@api.route('/project', methods=['POST'])
 @login_required
 def add_project():
     """新建项目
