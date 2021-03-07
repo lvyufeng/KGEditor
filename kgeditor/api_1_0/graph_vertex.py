@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 import logging
 from pyArango.theExceptions import *
 from pyArango.query import AQLQuery
+from kgeditor.utils.data import get_cache, save_cache, del_cache
 import json
 
 # fuzzy search for vertex
@@ -21,10 +22,18 @@ def list_vertex_contains(domain_id, graph_id):
     Args:
         graph_id: graph to show the vertex collections
     """
+
     name = request.args.get('name')
     batch_size = int(request.args.get('len'))
     domain_db = arango_conn['domain_{}'.format(domain_id)]
     db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
+
+    set_key = '{}_{}_vertex'.format(domain_id, graph_id)
+    data_key = 'fuzzy_{}'.format(name)
+
+    data = get_cache(set_key, data_key)
+    if data:
+        return data, 200, {"Content-Type":"application/json"}
 
     url = f'{db_graph.getURL()}/vertex'
     resp = arango_conn.session.get(url)
@@ -40,7 +49,12 @@ def list_vertex_contains(domain_id, graph_id):
     for collection in vertex_collections:
         query = AQLQuery(domain_db, aql.format(collection, name), int(batch_size/len(vertex_collections)), {}, {}, False, False)
         fuzzy_result.extend([{'_id': i['_id'], 'value': i['name']} for i in query])
-    return jsonify(errno=RET.OK, errmsg="OK", data=fuzzy_result)
+
+    data = dict(errno=RET.OK, errmsg="查询成功", data=fuzzy_result)
+    logging.info(data)
+    save_cache(set_key, data_key, data)
+
+    return data, 200, {"Content-Type":"application/json"}
 
 # list vertex collections
 @api.route('/<int:domain_id>/graph/<int:graph_id>/vertex', methods=['GET'])
@@ -54,14 +68,22 @@ def list_vertex_collections(domain_id, graph_id):
     """
     domain_db = arango_conn['domain_{}'.format(domain_id)]
     db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
+    set_key = '{}_{}_collections'.format(domain_id, graph_id)
+    data_key = 'vetex'
 
+    data = get_cache(set_key, data_key)
+    if data:
+        return data, 200, {"Content-Type":"application/json"}
     url = f'{db_graph.getURL()}/vertex'
     resp = arango_conn.session.get(url)
     if resp.status_code != 200:
         return jsonify(errno=RET.DBERR, errmsg='数据库异常')
     data = text2json(resp.text)
-    return jsonify(errno=RET.OK, errmsg="OK", data=data['collections'])
+    data = dict(errno=RET.OK, errmsg="查询成功", data=data['collections'])
+    logging.info(data)
+    save_cache(set_key, data_key, data)
 
+    return data, 200, {"Content-Type":"application/json"}
 # list vertex collection by id
 @api.route('/<int:domain_id>/graph/<int:graph_id>/vertex/<string:collection>', methods=['GET'])
 @login_required
@@ -74,6 +96,12 @@ def list_one_collection(domain_id, graph_id, collection):
     """
     page = request.args.get('page')
     page_len = request.args.get('len')
+    set_key = '{}_{}_vertex'.format(domain_id, graph_id)
+    data_key = '{}_{}'.format(collection, page, page_len)
+
+    data = get_cache(set_key, data_key)
+    if data:
+        return data, 200, {"Content-Type":"application/json"}
     try:
         page = int(page)
         page_len = int(page_len)
@@ -93,8 +121,11 @@ def list_one_collection(domain_id, graph_id, collection):
     data = collection.fetchAll(limit = page_len, skip = page_len * (page - 1))
     pages = int(count / page_len) + 1
 
-    return jsonify(errno=RET.OK, errmsg="OK", data={'vertex': data.result, 'pages': pages, 'count':count})
+    data = dict(errno=RET.OK, errmsg="查询成功", data={'vertex': data.result, 'pages': pages, 'count':count})
+    logging.info(data)
+    save_cache(set_key, data_key, data)
 
+    return data, 200, {"Content-Type":"application/json"}
 # add vertex
 @api.route('/<int:domain_id>/graph/<int:graph_id>/vertex/<collection>', methods=['POST'])
 @login_required
@@ -107,6 +138,10 @@ def add_vetex(domain_id, graph_id, collection):
     db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
     req = request.get_json()
     name = req['name']
+
+    set_key = '{}_{}_vertex'.format(domain_id, graph_id)
+    data = del_cache(set_key)
+
     if name is None:
         return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
     try:
@@ -128,6 +163,8 @@ def update_vetex(domain_id, graph_id, collection, vertex):
     db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
     url = "%s/vertex/%s/%s" % (db_graph.getURL(), collection, vertex)
     req = request.get_json()
+    set_key = '{}_{}_vertex'.format(domain_id, graph_id)
+    data = del_cache(set_key)
     if not req:
         return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
     try:
@@ -146,7 +183,8 @@ def delete_vetex(domain_id, graph_id, collection, vertex):
     # pass
     domain_db = arango_conn['domain_{}'.format(domain_id)]
     db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
-    
+    set_key = '{}_{}_vertex'.format(domain_id, graph_id)
+    data = del_cache(set_key)
     try:
         document = domain_db[collection][vertex]
         db_graph.deleteVertex(document)

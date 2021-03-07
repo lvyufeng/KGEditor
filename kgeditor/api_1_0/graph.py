@@ -1,9 +1,10 @@
 from . import api
 from flask import jsonify, g, request, session
 from kgeditor.utils.common import login_required, verify_domain, verify_graph
-from kgeditor import db, arango_conn
+from kgeditor import db, arango_conn, redis_store
 from kgeditor.models import Graph
 from kgeditor.utils.response_code import RET
+from kgeditor.utils.data import save_cache, get_cache
 from sqlalchemy.exc import IntegrityError
 import logging
 from pyArango.theExceptions import *
@@ -66,6 +67,12 @@ def list_graphs(domain_id):
     """
     graph_list = []
     user_id = g.user_id
+    set_key = '{}_graph'.format(user_id)
+    data_key = '{}_all'.format(domain_id)
+
+    data = get_cache(set_key, data_key)
+    if data:
+        return data, 200, {"Content-Type":"application/json"}
     try:
         graphs = Graph.query.filter_by(creator_id=user_id, domain_id=domain_id).all()
     except Exception as e:
@@ -74,7 +81,11 @@ def list_graphs(domain_id):
     logging.info(graphs)
     for graph in graphs:
         graph_list.append(graph.to_dict())
-    return jsonify(errno=RET.OK, errmsg="查询成功", data=graph_list)
+
+    data = dict(errno=RET.OK, errmsg="查询成功", data=graph_list)
+    save_cache(set_key, data_key, data)
+
+    return data, 200, {"Content-Type":"application/json"}
 
 # retrieve all
 @api.route('/all/graph', methods=['GET'])
@@ -84,6 +95,12 @@ def list_all_graphs():
     """
     graph_list = []
     user_id = g.user_id
+    set_key = '{}_graph'.format(user_id)
+    data_key = 'all'
+
+    data = get_cache(set_key, data_key)
+    if data:
+        return data, 200, {"Content-Type":"application/json"}
     try:
         graphs = Graph.query.filter_by(creator_id=user_id).all()
     except Exception as e:
@@ -152,11 +169,20 @@ def traversal(domain_id, graph_id):
     req_dict = request.get_json()
     startVertex = req_dict.pop('startVertex')
 
+    set_key = '{}_{}_traverse'.format(domain_id, graph_id)
+    data_key = '{}_{}_{}_{}'.format(startVertex, req_dict['direction'], req_dict['maxDepth'], req_dict['minDepth'])
+
+    data = get_cache(set_key, data_key)
+    if data:
+        return data, 200, {"Content-Type":"application/json"}
     req_dict["uniqueness"] =  {"vertices": "global", "edges": "global"}
     data = db_graph.traverse(startVertex, **req_dict)
 
-    return jsonify(errno=RET.OK, errmsg="OK", data=data['visited'])
+    data = dict(errno=RET.OK, errmsg="查询成功", data=data['visited'])
+    logging.info(data)
+    save_cache(set_key, data_key, data)
 
+    return data, 200, {"Content-Type":"application/json"}
 
 
 

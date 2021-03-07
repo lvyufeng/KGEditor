@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 import logging
 from pyArango.theExceptions import *
 import json
+from kgeditor.utils.data import get_cache, save_cache, del_cache
 
 # list edge collections
 @api.route('/<int:domain_id>/graph/<int:graph_id>/edge', methods=['GET'])
@@ -22,14 +23,22 @@ def list_edge_collections(domain_id, graph_id):
     """
     domain_db = arango_conn['domain_{}'.format(domain_id)]
     db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
+    set_key = '{}_{}_collections'.format(domain_id, graph_id)
+    data_key = 'edges'
 
+    data = get_cache(set_key, data_key)
+    if data:
+        return data, 200, {"Content-Type":"application/json"}
     url = f'{db_graph.getURL()}/edge'
     resp = arango_conn.session.get(url)
     if resp.status_code != 200:
         return jsonify(errno=RET.DBERR, errmsg='数据库异常')
     data = text2json(resp.text)
-    return jsonify(errno=RET.OK, errmsg="OK", data=data['collections'])
+    data = dict(errno=RET.OK, errmsg="查询成功", data=data['collections'])
+    logging.info(data)
+    save_cache(set_key, data_key, data)
 
+    return data, 200, {"Content-Type":"application/json"}
 # add edge
 @api.route('/<int:domain_id>/graph/<int:graph_id>/edge/<collection>', methods=['POST'])
 @login_required
@@ -43,6 +52,9 @@ def add_edge(domain_id, graph_id, collection):
     _from = req['from']
     _to = req['to']
     attribute = req['attribute']
+
+    set_key = '{}_{}_traverse'.format(domain_id, graph_id)
+    data = del_cache(set_key)
     if not all([_from, _to]):
         return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
     try:
@@ -61,6 +73,7 @@ def get_edge(domain_id, graph_id, collection, edge):
     domain_db = arango_conn['domain_{}'.format(domain_id)]
     db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
     url = "%s/edge/%s/%s" % (db_graph.getURL(), collection, edge)
+    
     try:
         r = db_graph.connection.session.get(url)        
     except Exception as e:
@@ -78,7 +91,8 @@ def delete_edge(domain_id, graph_id, collection, edge):
     # pass
     domain_db = arango_conn['domain_{}'.format(domain_id)]
     db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
-    
+    set_key = '{}_{}_traverse'.format(domain_id, graph_id)
+    data = del_cache(set_key)
     try:
         document = domain_db[collection][edge]
         db_graph.deleteEdge(document)
@@ -96,6 +110,8 @@ def update_edge(domain_id, graph_id, collection, edge):
     db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
     url = "%s/vertex/%s/%s" % (db_graph.getURL(), collection, edge)
     req = request.get_json()
+    set_key = '{}_{}_traverse'.format(domain_id, graph_id)
+    data = del_cache(set_key)
     if not req:
         return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
     try:
