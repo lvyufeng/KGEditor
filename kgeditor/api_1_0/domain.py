@@ -8,7 +8,7 @@ from kgeditor.utils.response_code import RET
 from sqlalchemy.exc import IntegrityError
 from pyArango.theExceptions import CreationError
 
-@api.route('/add_domain', methods=['POST'])
+@api.route('/domain', methods=['POST'])
 @login_required
 def add_domain():
     """添加领域
@@ -49,13 +49,28 @@ def add_domain():
     
     return jsonify(errno=RET.OK, errmsg="新建领域成功")
 
-@api.route('/delete_domain', methods=['DELETE'])
+@api.route('/domain', methods=['GET'])
 @login_required
-def delete_domain():
+def list_domain():
+    # pass
+    # get request json, return dict
+    try:
+        domain_list = Domain.query.all()
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+    domain_dict_list = []
+    for domain in domain_list:
+        domain_dict_list.append(domain.to_dict())
+    
+    return jsonify(errno=RET.OK, errmsg="OK", data=domain_dict_list)
+
+@api.route('/domain/<domain_id>', methods=['DELETE'])
+@login_required
+def delete_domain(domain_id):
     # pass
     user_id = g.user_id
     req_dict = request.get_json()
-    domain_id = req_dict.get('domain_id')
     if not domain_id:
         return jsonify(errno=RET.PARAMERR, errmsg="参数不完整")
     try:
@@ -78,29 +93,10 @@ def delete_domain():
         return jsonify(errno=RET.DBERR, errmsg='删除领域失败')     
     return jsonify(errno=RET.OK, errmsg="删除领域成功")
 
-@api.route('/list_domain', methods=['GET'])
+@api.route('/domain/<domain_id>', methods=['PATCH'])
 @login_required
-def list_domain():
-    # pass
-    # get request json, return dict
-    try:
-        domain_list = Domain.query.all()
-    except Exception as e:
-        logging.error(e)
-        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
-    domain_dict_list = []
-    for domain in domain_list:
-        domain_dict_list.append(domain.to_dict())
-    
-    return jsonify(errno=RET.OK, errmsg="OK", data=domain_dict_list)
-
-@api.route('/rename_domain', methods=['POST'])
-@login_required
-def rename_domain():
-    # pass
-    # get request json, return dict
+def rename_domain(domain_id):
     req_dict = request.get_json()
-    domain_id = req_dict.get('domain_id')
     name = req_dict.get('name')
     if not all([domain_id, name]):
         return jsonify(errno=RET.PARAMERR, errmsg='参数错误')

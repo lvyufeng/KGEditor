@@ -13,7 +13,7 @@ def index():
     logging.warn('info msg')
     return "index"
 
-@api.route('/get_public_graphs', methods=['GET'])
+@api.route('/public_graph', methods=['GET'])
 def get_public_graphs():
     graph_list = []
     try:
