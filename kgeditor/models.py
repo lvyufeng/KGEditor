@@ -48,9 +48,6 @@ class Project(BaseModel, db.Model):
 # class DataBase(BaseModel, db.Model):
 #     pass
 
-# class Model(BaseModel, db.Model):
-#     pass
-
 class Graph(BaseModel, db.Model):
     __tablename__ = 'graph'
     id = db.Column(db.Integer, primary_key=True)
@@ -76,4 +73,23 @@ class Domain(BaseModel, db.Model):
         return {
             'domain_id': self.id,
             'domain_name': self.name
+        }
+
+class Model(BaseModel, db.Model):
+    __tablename__ = 'model'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32), unique=True, nullable=False)
+    creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
+    type = db.Column(db.Integer, nullable=False)
+    url = db.Column(db.String(200), unique=True, nullable=False)
+    private = db.Column(db.Boolean, nullable=False)
+    discription = db.Column(db.String(500), nullable=True)
+
+    def to_dict(self):
+        return {
+            'model_id': self.id,
+            'model_name': self.name,
+            'model_url': self.url,
+            'model_type': self.type,
+            'model_discription': self.discription
         }

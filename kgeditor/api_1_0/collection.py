@@ -2,6 +2,7 @@
 entity and relation types are defined as collection in ArangoDB,
 and all operations of them are assigned in this file
 """
+import logging
 from . import api
 from flask import jsonify, g, request, session
 from kgeditor.utils.common import login_required, verify_domain
@@ -10,13 +11,15 @@ from kgeditor.models import Graph
 from kgeditor.utils.response_code import RET
 from kgeditor.utils.type_dict import type_dict
 from sqlalchemy.exc import IntegrityError
-import logging
 from pyArango.consts import *
 from pyArango.theExceptions import CreationError
+
 @api.route('list_documents', methods=['POST'])
 @login_required
 @verify_domain
 def list_documents():
+    """
+    """
     req_dict = request.get_json()
     documents = []
     domain_db = arango_conn['domain_{}'.format(g.domain_id)]
@@ -32,6 +35,8 @@ def list_documents():
 @login_required
 @verify_domain
 def add_document():
+    """
+    """
     documents = []
     domain_db = arango_conn['domain_{}'.format(g.domain_id)]
     req_dict = request.get_json()

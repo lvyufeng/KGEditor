@@ -6,3 +6,7 @@ LOGIN_ERROR_FORBID_TIME = 600
 
 # redis cache timemout
 REDIS_CACHE_EXPIRES = 7200
+
+# model type
+MODEL_TYPE_URL = 0
+MODEL_TYPE_DOCKER = 1
