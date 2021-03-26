@@ -7,7 +7,7 @@ from config import config_map
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from flask_wtf import CSRFProtect
-from flask_uploads import DATA, UploadSet, configure_uploads
+from flask_uploads import DATA, UploadSet, configure_uploads, patch_request_class, TEXT
 from flask_docs import ApiDoc
 from logging.handlers import RotatingFileHandler
 from pyArango.connection import *
@@ -27,6 +27,9 @@ logging.getLogger().addHandler(file_log_handler)
 db = SQLAlchemy()
 redis_store = None
 arango_conn = None
+text = UploadSet('data', TEXT)
+data = UploadSet('data', DATA)
+file_path = None
 
 def create_app(mode):
     """
@@ -35,6 +38,9 @@ def create_app(mode):
     app = Flask(__name__)
     config_cls = config_map.get(mode)
     app.config.from_object(config_cls)
+
+    global file_path
+    file_path = config_cls.UPLOADED_DATA_DEST
 
     # cross domain
     CORS(app, supports_credentials=True)
@@ -54,8 +60,10 @@ def create_app(mode):
     # CSRFProtect(app)
 
     # configure uploads
-    data = UploadSet('data', DATA)
+    
     configure_uploads(app, data)
+    configure_uploads(app, text)
+    patch_request_class(app)
 
     ApiDoc(app)
     from kgeditor import api_1_0

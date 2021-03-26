@@ -27,35 +27,29 @@ def create_graph(domain_id):
     name = req_dict.get('name')
     private = req_dict.get('private')
     # logging.info([name, private, domain_id])
-    # if None in [name, private, domain_id]:
-    #     return jsonify(errno=RET.PARAMERR, errmsg="参数不完整")
-    # try:
-    #     graph = Graph.query.filter_by(name=name).first()
-    # except Exception as e:
-    #     logging.error(e)
-    #     return jsonify(errno=RET.DBERR, errmsg='数据库异常')
-    # else:
-    #     if graph is not None:
-    #         return jsonify(errno=RET.DATAEXIST, errmsg='"{}"图谱已存在'.format(name))
-    # # 5.save graph info to db
-    # graph = Graph(name=name, private=private, creator_id=user_id, domain_id=domain_id)
-    # try:
-    #     db.session.add(graph)
-    #     db.session.commit()
-    #     arango_db = arango_conn["domain_{}".format(domain_id)]
-    #     arango_db.createGraph("graph_{}".format(graph.id))
-    # except IntegrityError as e:
-    #     db.session.rollback()
-    #     # phone number duplicate
-    #     logging.error(e)
-    #     return jsonify(errno=RET.DATAEXIST, errmsg='图谱已存在')
-    # except CreationError as e:
-    #     logging.error(e)
-    #     return jsonify(errno=RET.DBERR, errmsg='创建图谱失败')
-    # except Exception as e:
-    #     db.session.rollback()
-    #     logging.error(e)
-    #     return jsonify(errno=RET.DBERR, errmsg='查询数据库异常')
+    if None in [name, private, domain_id]:
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不完整")
+    try:
+        graph = Graph.query.filter_by(name=name).first()
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+    else:
+        if graph is not None:
+            return jsonify(errno=RET.DATAEXIST, errmsg='"{}"图谱已存在'.format(name))
+    # 5.save graph info to db
+    graph = Graph(name=name, private=private, creator_id=user_id, domain_id=domain_id)
+    try:
+        db.session.add(graph)
+        db.session.commit()
+    except IntegrityError as e:
+        db.session.rollback()
+        logging.error(e)
+        return jsonify(errno=RET.DATAEXIST, errmsg='图谱已存在')
+    except Exception as e:
+        db.session.rollback()
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询数据库异常')
     
     return jsonify(errno=RET.OK, errmsg="新建图谱成功")
 

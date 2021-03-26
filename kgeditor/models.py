@@ -1,3 +1,4 @@
+import json
 from . import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -45,9 +46,25 @@ class Project(BaseModel, db.Model):
             'project_id': self.id,
             'project_name': self.name,
         }
-# class DataBase(BaseModel, db.Model):
-#     pass
 
+class Data(BaseModel, db.Model):
+    __tablename__ = 'data'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32), unique=True, nullable=False)
+    data_type = db.Column(db.Integer, nullable=False)
+    data_info = db.Column(db.String(500), nullable=False)
+    creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
+    private = db.Column(db.Boolean, nullable=False)
+    is_raw = db.Column(db.Boolean, nullable=False)
+    
+    def to_dict(self):
+        return {
+            'data_name': self.name,
+            'data_id': self.id,
+            'data_type': self.data_type,
+            'private': self.private
+        }
+    
 class Graph(BaseModel, db.Model):
     __tablename__ = 'graph'
     id = db.Column(db.Integer, primary_key=True)
@@ -63,6 +80,7 @@ class Graph(BaseModel, db.Model):
             'private': self.private,
             'domain_id': self.domain_id
         }
+        
 class Domain(BaseModel, db.Model):
     __tablename__ = 'domain'
     id = db.Column(db.Integer, primary_key=True)
