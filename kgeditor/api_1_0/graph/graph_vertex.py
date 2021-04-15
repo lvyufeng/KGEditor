@@ -1,4 +1,4 @@
-from . import api
+from .. import api
 from flask import jsonify, g, request, session
 from kgeditor.utils.common import login_required, verify_domain, verify_graph
 from kgeditor.utils.data import text2json

@@ -1,5 +1,5 @@
 import logging
-from . import api
+from .. import api
 from flask import jsonify, g, request
 from kgeditor.utils.response_code import RET
 from kgeditor.utils.common import login_required

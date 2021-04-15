@@ -1,4 +1,4 @@
-from . import api
+from .. import api
 from flask import jsonify, g, request, session
 from kgeditor.utils.common import login_required, verify_domain, verify_graph
 from kgeditor import db, arango_conn, redis_store
@@ -166,10 +166,11 @@ def traversal(domain_id, graph_id):
     set_key = '{}_{}_traverse'.format(domain_id, graph_id)
     data_key = '{}_{}_{}_{}'.format(startVertex, req_dict['direction'], req_dict['maxDepth'], req_dict['minDepth'])
 
-    data = get_cache(set_key, data_key)
-    if data:
-        return data, 200, {"Content-Type":"application/json"}
-    req_dict["uniqueness"] =  {"vertices": "global", "edges": "global"}
+    # data = get_cache(set_key, data_key)
+    # if data:
+    #     logging.info('read from redis')
+    #     return data, 200, {"Content-Type":"application/json"}
+    # req_dict["uniqueness"] =  {"vertices": "global", "edges": "global"}
     data = db_graph.traverse(startVertex, **req_dict)
 
     data = dict(errno=RET.OK, errmsg="查询成功", data=data['visited'])
@@ -179,5 +180,48 @@ def traversal(domain_id, graph_id):
     return data, 200, {"Content-Type":"application/json"}
 
 
+@api.route('/<int:domain_id>/graph/<int:graph_id>/neighbor', methods=['POST'])
+@login_required
+@verify_graph
+def neighbor(domain_id, graph_id):
+    """获取当前节点为中心，一层的连接节点
+    
+    Args:
+        startVertex: the start vertex to show, eg. "persons/alice"
 
+    """
+    domain_db = arango_conn['domain_{}'.format(domain_id)]
+    db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
+    req_dict = request.get_json()
+    startVertex = req_dict.get('startVertex')
 
+    # set_key = '{}_{}_traverse'.format(domain_id, graph_id)
+    # data_key = '{}_{}_{}_{}'.format(startVertex, req_dict['direction'], req_dict['maxDepth'], req_dict['minDepth'])
+
+    # data = get_cache(set_key, data_key)
+    # if data:
+    #     logging.info('read from redis')
+    #     return data, 200, {"Content-Type":"application/json"}
+    # req_dict["uniqueness"] =  {"vertices": "global", "edges": "global"}
+
+    in_visited = db_graph.traverse(startVertex, direction='inbound', maxDepth=1, minDepth=0)
+    out_visited = db_graph.traverse(startVertex, direction='outbound', maxDepth=1, minDepth=0)
+    in_data = exclude_start(in_visited['visited']['vertices'], startVertex)
+    out_data = exclude_start(out_visited['visited']['vertices'], startVertex)
+
+    all_data = {
+        'inbound': in_data,
+        'outbound': out_data
+    }
+    data = dict(errno=RET.OK, errmsg="查询成功", data=all_data)
+    logging.info(data)
+    # save_cache(set_key, data_key, data)
+
+    return data, 200, {"Content-Type":"application/json"}
+
+def exclude_start(visited, start_node):
+    excluded = []
+    for i in visited:
+        if i['_id'] != start_node:
+            excluded.append(i)
+    return excluded
