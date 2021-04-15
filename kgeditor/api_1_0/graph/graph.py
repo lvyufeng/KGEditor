@@ -172,9 +172,10 @@ def traversal(domain_id, graph_id):
     #     return data, 200, {"Content-Type":"application/json"}
     # req_dict["uniqueness"] =  {"vertices": "global", "edges": "global"}
     data = db_graph.traverse(startVertex, **req_dict)
-
-    data = dict(errno=RET.OK, errmsg="查询成功", data=data['visited'])
     logging.info(data)
+    # data = dict(errno=RET.OK, errmsg="查询成功", data=process_visited(data['visited']))
+    data = dict(errno=RET.OK, errmsg="查询成功", data=data['visited'])
+
     save_cache(set_key, data_key, data)
 
     return data, 200, {"Content-Type":"application/json"}
@@ -204,17 +205,9 @@ def neighbor(domain_id, graph_id):
     #     return data, 200, {"Content-Type":"application/json"}
     # req_dict["uniqueness"] =  {"vertices": "global", "edges": "global"}
 
-    in_visited = db_graph.traverse(startVertex, direction='inbound', maxDepth=1, minDepth=0)
-    out_visited = db_graph.traverse(startVertex, direction='outbound', maxDepth=1, minDepth=0)
-    in_data = exclude_start(in_visited['visited']['vertices'], startVertex)
-    out_data = exclude_start(out_visited['visited']['vertices'], startVertex)
-
-    all_data = {
-        'inbound': in_data,
-        'outbound': out_data
-    }
-    data = dict(errno=RET.OK, errmsg="查询成功", data=all_data)
-    logging.info(data)
+    data = db_graph.traverse(startVertex, direction='any', maxDepth=1, minDepth=0)
+    # logging.info(data)
+    data = dict(errno=RET.OK, errmsg="查询成功", data=process_visited(data['visited']))
     # save_cache(set_key, data_key, data)
 
     return data, 200, {"Content-Type":"application/json"}
@@ -225,3 +218,19 @@ def exclude_start(visited, start_node):
         if i['_id'] != start_node:
             excluded.append(i)
     return excluded
+
+def process_visited(visited):
+    processed = []
+    paths = visited['paths']
+    for path in paths:
+        edges = path['edges']
+        if not edges:
+            continue
+        vertices = path['vertices']
+        edge = edges[0]
+        # logging.info(vertices)
+        edge['_from_name'] = vertices[0]['name'] if vertices[0]['_id'] == edge['_from'] else vertices[1]['name']
+        edge['_to_name'] = vertices[0]['name'] if vertices[0]['_id'] == edge['_to'] else vertices[1]['name']
+        processed.append(edge)
+
+    return processed
