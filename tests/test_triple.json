@@ -1,0 +1,39 @@
+{
+    "entity_type": [
+        {
+            "process_method":"处理方法"
+        },
+        {
+            "process_task":"处理任务"
+        },
+        {
+            "evaluate_index":"评估指标"
+        },
+        {
+            "dataset":"数据集"
+        }
+    ],
+    "relation_type": [
+        {
+            "application":"应用关系"
+        },
+        {
+            "comparison":"对比关系"
+        },
+        {
+            "corelation":"同指关系"
+        },
+        {
+            "inclusion":"包含关系"
+        }
+    ],
+    "triple_data": [
+        {
+            "entity_1":"模糊C-均值",
+            "entity_1_type":"process_method",
+            "entity_2":"异常检测",
+            "entity_2_type":"process_method",
+            "relation_type":"application"
+        }
+    ]
+}

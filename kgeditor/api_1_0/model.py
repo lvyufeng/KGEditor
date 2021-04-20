@@ -25,12 +25,12 @@ def add_model():
     user_id = g.user_id
     req_dict = request.get_json()
     name = req_dict.get('name')
-    type = req_dict.get('type')
+    model_type = req_dict.get('type')
     url = req_dict.get('url')
     private = req_dict.get('private')
     discription = req_dict.get('discription')
 
-    if None in [name, url, type, private]:
+    if None in [name, url, model_type, private]:
         return jsonify(errno=RET.PARAMERR, errmsg="参数不完整")
     try:
         domain = Model.query.filter_by(name=name).first()
@@ -41,7 +41,7 @@ def add_model():
         if domain is not None:
             return jsonify(errno=RET.DATAEXIST, errmsg='"{}"模型已存在'.format(name))
 
-    model = Model(name=name, creator_id=user_id, type=type, url=url, private=private, discription=discription)
+    model = Model(name=name, creator_id=user_id, model_type=model_type, url=url, private=private, discription=discription)
     try:
         db.session.add(model)
         db.session.commit()
@@ -106,17 +106,17 @@ def modify_model(model_id):
     user_id = g.user_id
     req_dict = request.get_json()
     name = req_dict.get('name')
-    type = req_dict.get('type')
+    model_type = req_dict.get('type')
     url = req_dict.get('url')
     private = req_dict.get('private')
     discription = req_dict.get('discription')
 
-    if None in [model_id, type, url, private, discription]:
+    if None in [model_id, model_type, url, private, discription]:
         return jsonify(errno=RET.PARAMERR, errmsg='参数错误')
     try:
         model = Model.query.filter_by(id=model_id).first()
         model.name = name
-        model.type = type
+        model.model_type = model_type
         model.url = url
         model.private = private
         model.discription = discription
@@ -125,3 +125,21 @@ def modify_model(model_id):
         logging.error(e)
         return jsonify(errno=RET.DBERR, errmsg='数据库异常')
     return jsonify(errno=RET.OK, errmsg="修改成功")
+
+
+@api.route('/<model_type>/model', methods=['GET'])
+@login_required
+def list_type_model(model_type):
+    """Query all models
+    
+    """
+    try:
+        model_list = Model.query.filter_by(model_type=model_type).all()
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+    model_dict_list = []
+    for model in model_list:
+        model_dict_list.append(model.to_dict())
+    
+    return jsonify(errno=RET.OK, errmsg="OK", data=model_dict_list)

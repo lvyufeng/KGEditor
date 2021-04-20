@@ -1,0 +1,5 @@
+entity_1, entity_1_type, entity_2, entity_2_type, relation_type
+处理方法, 模糊C-均值, 处理方法, 异常检测, 应用关系
+处理方法, fuzzy C-means, 处理方法, 异常检测, 应用关系
+处理方法, FCM, 处理方法, 异常检测, 应用关系
+评估指标, 检测率, 处理方法, 异常检测模型, 应用关系

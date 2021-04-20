@@ -14,6 +14,12 @@ project_partner = db.Table(
     # authority = db.Column(db.Integer, db.ForeignKey("project.id"), nullable=False)
 )
 
+project_graph = db.Table(
+    "project_graph",
+    db.Column('project_id', db.Integer, db.ForeignKey("project.id"), primary_key=True),
+    db.Column('graph_id', db.Integer, db.ForeignKey("graph.id"), primary_key=True),
+)
+
 class User(BaseModel, db.Model):
     __tablename__ = 'user_profile'
     id = db.Column(db.Integer, primary_key=True)
@@ -40,11 +46,14 @@ class Project(BaseModel, db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
     name = db.Column(db.String(32), unique=True, nullable=False)
     partners = db.relationship('User', secondary=project_partner)
-    graphs = db.relationship('Graph')
+    graphs = db.relationship('Graph', secondary=project_graph)
+    project_type = db.Column(db.Integer, nullable=False)
+    
     def to_dict(self):
         return {
             'project_id': self.id,
             'project_name': self.name,
+            'project_type': self.project_type
         }
 
 class Data(BaseModel, db.Model):
@@ -98,7 +107,7 @@ class Model(BaseModel, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), unique=True, nullable=False)
     creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
-    type = db.Column(db.Integer, nullable=False)
+    model_type = db.Column(db.Integer, nullable=False)
     url = db.Column(db.String(200), unique=True, nullable=False)
     private = db.Column(db.Boolean, nullable=False)
     discription = db.Column(db.String(500), nullable=True)
@@ -108,6 +117,6 @@ class Model(BaseModel, db.Model):
             'model_id': self.id,
             'model_name': self.name,
             'model_url': self.url,
-            'model_type': self.type,
+            'model_type': self.model_type,
             'model_discription': self.discription
         }
