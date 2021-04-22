@@ -4,4 +4,4 @@ from config import CeleryConfig
 celery_app = Celery('tasks')
 celery_app.config_from_object(CeleryConfig)
 
-celery_app.autodiscover_tasks()
+celery_app.autodiscover_tasks(["tasks.import_triple_data"])
