@@ -10,3 +10,4 @@ flask-docs
 redis
 pymysql
 pyArango
+celery
