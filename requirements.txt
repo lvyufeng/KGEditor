@@ -7,6 +7,7 @@ flask-migrate
 flask-cors
 flask-uploads
 flask-docs
+flask-restx
 redis
 pymysql
 pyArango

@@ -67,5 +67,5 @@ def create_app(mode):
 
     ApiDoc(app)
     from kgeditor import api_1_0
-    app.register_blueprint(api_1_0.api, url_prefix="/api/v1.0")
+    app.register_blueprint(api_1_0.api_v1, url_prefix="/api/v1.0")
     return app

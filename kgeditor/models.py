@@ -81,7 +81,7 @@ class Graph(BaseModel, db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
     private = db.Column(db.Boolean, nullable=False)
     domain_id = db.Column(db.Integer, db.ForeignKey("domain.id"), nullable=False)
-    project_id = db.Column(db.Integer, db.ForeignKey("project.id"), nullable=True)
+    # project_id = db.Column(db.Integer, db.ForeignKey("project.id"), nullable=True)
     def to_dict(self):
         return {
             'graph_id': self.id,
