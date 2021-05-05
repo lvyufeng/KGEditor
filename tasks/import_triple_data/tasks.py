@@ -8,3 +8,8 @@ def open_file(path):
 
     return 1
 
+# read data from csv or json file
+
+# save them into arangodb
+
+

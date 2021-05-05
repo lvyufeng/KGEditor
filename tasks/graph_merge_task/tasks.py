@@ -1,9 +1,12 @@
-from tasks.main import celery_app as app
 
-@app.task
-def open_file(path):
-    with open(path, 'r', encoding='utf-8') as f:
-        print(f.readline())
-    f.close()
-    
-    return 1
+# get triple data from db(arangodb)
+
+# check valid entity and relation type
+
+# run graph merge service
+
+# determine whether need insert node
+
+# determine whether need insert edge
+
+# 
