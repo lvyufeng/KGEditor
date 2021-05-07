@@ -1,7 +1,5 @@
-import re
 import logging
-from flask import request, jsonify, session, abort, make_response
-from kgeditor.utils.response_code import RET
+from flask import request, abort, session
 from kgeditor.models import User
 from kgeditor import db, redis_store, constants
 from sqlalchemy.exc import IntegrityError
@@ -69,4 +67,6 @@ class UserDAO:
             except Exception as e:
                 logging.error(e)
             return abort(400, 'Wrong username or password')
+        session['name'] = user.name
+        session['user_id'] = user.id
         return {'message': 'Login succeed.'}, 200

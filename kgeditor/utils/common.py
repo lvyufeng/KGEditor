@@ -1,4 +1,4 @@
-from flask import session, jsonify, g, request
+from flask import session, jsonify, g, request, abort
 from kgeditor.utils.response_code import RET
 import functools
 from kgeditor.models import Domain, Graph
@@ -12,7 +12,8 @@ def login_required(view_func):
             g.user_id = user_id
             return view_func(*args, **kwargs)
         else:
-            return jsonify(errno=RET.SESSIONERR, errmsg="用户未登录")
+            return abort(401, 'User unauthorized.')
+            # return jsonify(errno=RET.SESSIONERR, errmsg="用户未登录")
     return wrapper
 
 # verify domain

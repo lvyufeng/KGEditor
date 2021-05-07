@@ -9,3 +9,4 @@ api = Api(api_v1, version="1.0", title="KGEditor API", description="KGEditor Res
 # from .project import project, annotation_project, fusion_project
 from .graph import *
 from .passport import *
+from .domain import *

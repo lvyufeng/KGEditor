@@ -73,10 +73,7 @@ class Session(Resource):
             # wrong format
             return abort(400, "Wrong phone number format.")
         # error times
-        resp = user_dao.get(api.payload)
-        session['name'] = user.name
-
-        return resp
+        return user_dao.get(api.payload)
 
     @ns.doc("user_logout")
     @ns.response(200, 'Logout succeed.')
