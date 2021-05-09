@@ -11,5 +11,14 @@ class UserDAO:
         pass
 
     def create(self, data):
-        logging.info(data)
+        try:
+            user = User.query.filter_by(mobile=mobile).first()
+        except Exception as e:
+            db.session.rollback()
+            logging.error(e)
+            return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+        else:
+            if user is not None:
+                return jsonify(errno=RET.DATAEXIST, errmsg='手机号已存在')
+            logging.info(data)
         return []
