@@ -46,14 +46,15 @@ class Project(BaseModel, db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
     name = db.Column(db.String(32), unique=True, nullable=False)
     partners = db.relationship('User', secondary=project_partner)
-    graphs = db.relationship('Graph', secondary=project_graph)
+    # graphs = db.relationship('Graph', secondary=project_graph)
     project_type = db.Column(db.Integer, nullable=False)
-    
+    project_status = db.Column(db.Boolean, nullable=False, default=False)
     def to_dict(self):
         return {
             'project_id': self.id,
             'project_name': self.name,
-            'project_type': self.project_type
+            'project_type': self.project_type,
+            'project_status': self.project_status
         }
 
 class Data(BaseModel, db.Model):

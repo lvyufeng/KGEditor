@@ -8,6 +8,7 @@ flask-cors
 flask-uploads
 flask-docs
 flask-restx
+flask-httpauth
 redis
 pymysql
 pyArango
