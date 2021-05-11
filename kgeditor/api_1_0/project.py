@@ -38,7 +38,7 @@ class AnnotationProjectList(Resource):
         return project_dao.all(project_type=0)
 
 @ns.route('/project/fusion')
-class AnnotationProjectList(Resource):
+class FusionProjectList(Resource):
     @ns.doc('list_fusion_projects')
     @login_required
     def get(self):

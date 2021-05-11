@@ -11,3 +11,4 @@ from .graph import *
 from .passport import *
 from .domain import *
 from .project import *
+from .model import *

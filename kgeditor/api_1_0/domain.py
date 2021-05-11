@@ -25,8 +25,7 @@ class DomainList(Resource):
     def post(self):
         req_dict = api.payload
         name = req_dict.get('name')
-        type_id = req_dict.get('type_id')
-        if not all([name, type_id]):
+        if not name:
             return abort(400, "Invalid parameters.")
         return domain_dao.create(api.payload)
 
