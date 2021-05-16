@@ -5,6 +5,7 @@ from flask import abort, session, request
 import re
 import logging
 from kgeditor.utils.common import login_required
+from kgeditor.constants import TASK_ANNOTATION, TASK_FUSION, TASK_GRAPH
 
 ns = api.namespace('Project', path='/', description='Project operations')
 
@@ -35,7 +36,7 @@ class AnnotationProjectList(Resource):
     @login_required
     def get(self):
         '''List all annotation projects'''
-        return project_dao.all(project_type=0)
+        return project_dao.all(project_type=TASK_ANNOTATION)
 
 @ns.route('/project/fusion')
 class FusionProjectList(Resource):
@@ -43,8 +44,17 @@ class FusionProjectList(Resource):
     @login_required
     def get(self):
         '''List all fusion projects'''
-        return project_dao.all(project_type=1)
-        
+        return project_dao.all(project_type=TASK_FUSION)
+
+@ns.route('/project/fusion')
+class FusionProjectList(Resource):
+    @ns.doc('list_fusion_projects')
+    @login_required
+    def get(self):
+        '''List all fusion projects'''
+        return project_dao.all(project_type=TASK_FUSION)
+
+
 @ns.route('/project/<int:id>')
 class Project(Resource):
     """Show a single project item and lets you delete them"""
