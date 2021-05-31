@@ -1,11 +1,7 @@
 import logging
-from flask import jsonify, g, request, session, abort
-from kgeditor.utils.common import login_required
-from kgeditor import db, arango_conn
+from flask import session, abort
+from kgeditor import db
 from kgeditor.models import Domain
-from kgeditor.utils.response_code import RET
-from sqlalchemy.exc import IntegrityError
-from pyArango.theExceptions import CreationError
 
 class DomainDAO:
     def __init__(self):

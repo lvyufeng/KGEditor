@@ -1,8 +1,7 @@
 import logging
-from flask import request, abort, session, g
+from flask import abort, session, g
 from kgeditor.models import Project
-from kgeditor import db, redis_store, constants
-from sqlalchemy.exc import IntegrityError
+from kgeditor import db
 
 class ProjectDAO:
     def __init__(self):

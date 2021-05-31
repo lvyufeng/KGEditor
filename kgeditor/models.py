@@ -82,13 +82,15 @@ class Graph(BaseModel, db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
     private = db.Column(db.Boolean, nullable=False)
     domain_id = db.Column(db.Integer, db.ForeignKey("domain.id"), nullable=False)
+    connected = db.Column(db.Boolean, nullable=False, default=False)
     # project_id = db.Column(db.Integer, db.ForeignKey("project.id"), nullable=True)
     def to_dict(self):
         return {
             'graph_id': self.id,
             'graph_name': self.name,
             'private': self.private,
-            'domain_id': self.domain_id
+            'domain_id': self.domain_id,
+            'connected': self.connected
         }
         
 class Domain(BaseModel, db.Model):

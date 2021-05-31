@@ -1,4 +1,4 @@
-from flask_restx import Resource, fields
+from flask_restx import Resource, fields, reqparse
 from . import api
 from kgeditor.dao.project import ProjectDAO
 from flask import abort, session, request
@@ -11,13 +11,23 @@ ns = api.namespace('Project', path='/', description='Project operations')
 
 project_dao = ProjectDAO()
 
+parser = reqparse.RequestParser()
+parser.add_argument('type', type=str)
+
 @ns.route('/project')
 class ProjectList(Resource):
     """Shows a list of all projects, and lets you to add new projects."""
     @ns.doc('list_projects')
+    @ns.expect(parser)
     @login_required
     def get(self):
         '''List all projects'''
+        data = parser.parse_args()
+        project_type = data.get('type')
+        if project_type == '0':
+            return project_dao.all(project_type=TASK_ANNOTATION)
+        elif project_type == '1':
+            return project_dao.all(project_type=TASK_FUSION)
         return project_dao.all()
 
     @ns.doc('create_project')
@@ -29,31 +39,6 @@ class ProjectList(Resource):
         if not name:
             return abort(400, "Invalid parameters.")
         return project_dao.create(api.payload)
-
-@ns.route('/project/annotation')
-class AnnotationProjectList(Resource):
-    @ns.doc('list_annotation_projects')
-    @login_required
-    def get(self):
-        '''List all annotation projects'''
-        return project_dao.all(project_type=TASK_ANNOTATION)
-
-@ns.route('/project/fusion')
-class FusionProjectList(Resource):
-    @ns.doc('list_fusion_projects')
-    @login_required
-    def get(self):
-        '''List all fusion projects'''
-        return project_dao.all(project_type=TASK_FUSION)
-
-@ns.route('/project/fusion')
-class FusionProjectList(Resource):
-    @ns.doc('list_fusion_projects')
-    @login_required
-    def get(self):
-        '''List all fusion projects'''
-        return project_dao.all(project_type=TASK_FUSION)
-
 
 @ns.route('/project/<int:id>')
 class Project(Resource):

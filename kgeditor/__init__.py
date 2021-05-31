@@ -26,7 +26,7 @@ logging.getLogger().addHandler(file_log_handler)
 
 db = SQLAlchemy()
 redis_store = None
-arango_conn = None
+domain_db = None
 text = UploadSet('data', TEXT)
 data = UploadSet('data', DATA)
 file_path = None
@@ -51,8 +51,10 @@ def create_app(mode):
     global redis_store
     redis_store = redis.StrictRedis(host=config_cls.REDIS_HOST, port=config_cls.REDIS_PORT)
 
-    global arango_conn
+    global domain_db
     arango_conn = Connection(config_cls.ARANGO_URL, username=config_cls.ARANGO_USERNAME, password=config_cls.ARANGO_PASSWORD)
+    domain_db = arango_conn['domain_27']
+
     # flask session, store session in redis
     Session(app)
 
