@@ -1,4 +1,4 @@
-from flask_restx import Resource, fields
+from flask_restx import Resource, fields, reqparse
 from . import api
 from kgeditor.dao.model import ModelDAO
 from flask import abort, session, request
@@ -7,17 +7,28 @@ import logging
 from kgeditor.utils.common import login_required
 
 ns = api.namespace('Model', path='/', description='Model operations')
-
+model_parser = reqparse.RequestParser()
+model_parser.add_argument('type', type=str)
 model_dao = ModelDAO()
 
 @ns.route('/model')
 class ModelList(Resource):
     """Shows a list of all models, and lets you to add new models."""
     @ns.doc('list_models')
+    @ns.expect(model_parser)
     @login_required
     def get(self):
         '''List all models'''
-        return model_dao.all()
+        data = model_parser.parse_args()
+        model_type = data.get('type')
+        if model_type is None:
+            return model_dao.all()
+        elif model_type == 'fusion':
+            return model_dao.all(1)
+        elif model_type == 'annotation':
+            return model_dao.all(0)
+        else:
+            return abort(400, "Invalid parameters.")
 
     @ns.doc('add_model')
     @login_required
@@ -31,23 +42,6 @@ class ModelList(Resource):
             return abort(400, "Invalid parameters.")
         return model_dao.create(api.payload)
 
-@ns.route('/model/annotation')
-class AnnotationModelList(Resource):
-    """Shows a list of all annotation models"""
-    @ns.doc('list_annotation_models')
-    @login_required
-    def get(self):
-        '''List all models'''
-        return model_dao.all(0)
-
-@ns.route('/model/fusion')
-class FusionModelList(Resource):
-    """Shows a list of all fusion models"""
-    @ns.doc('list_fusion_models')
-    @login_required
-    def get(self):
-        '''List all models'''
-        return model_dao.all(1)
 
 @ns.route('/model/<int:id>')
 @ns.response(404, 'Model not found.')
