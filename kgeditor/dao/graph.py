@@ -2,6 +2,7 @@ from kgeditor.models import Graph
 from flask import session, abort, g
 import logging
 from kgeditor import domain_db, db
+from kgeditor.utils.graph_utils import exclude_start, process_visited
 
 class GraphDAO:
     def __init__(self):
@@ -67,6 +68,30 @@ class GraphDAO:
 
         return {'data': graph_dict_list, 'message': 'Query succeed.'}, 200
 
+    def traverse(self, graph_id, req_dict):
+        db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
+        startVertex = req_dict.pop('startVertex')
+        try:
+            data = db_graph.traverse(startVertex, **req_dict)
+        except Exception as e:
+            logging.error(e)
+            return abort(500, 'Database error.')
+
+        return {'data':data['visited'], 'message':'Traverse knowledge graph succeed.'}, 200
+
+    def neighbor(self, graph_id, req_dict):
+        db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
+        startVertex = req_dict.get('startVertex')
+
+        try:
+            data = db_graph.traverse(startVertex, direction='any', maxDepth=1, minDepth=0)
+        except Exception as e:
+            logging.error(e)
+            return abort(500, 'Database error.')
+
+        return {'data':process_visited(data['visited']), 'message':'Fetch vertex neighbor succeed.'}, 200
+
+
 class VertexDAO:
     def __init__(self):
         pass
@@ -90,14 +115,27 @@ class VertexDAO:
 
         return {'data':{'vertex': data.result, 'pages': pages, 'count':count}, 'message':'Fetch vertex succeed.'}, 200
 
-    def create(self, data):
-        pass
+    def create(self, graph_id, collection, data):
+        db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
+        try:
+            db_graph.createVertex(collection, data)
+        except Exception as e:
+            logging.error(e)
+            return abort(500, 'Create vertex failed.')
+        return {'message':'Create vertex succeed.'}, 201
 
     def update(self, id, data):
         pass
 
-    def delete(self, id):
-        pass
+    def delete(self, graph_id, collection, vertex_id):
+        db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
+        try:
+            document = domain_db[collection][vertex_id]
+            db_graph.deleteVertex(document)
+        except Exception as e:
+            logging.error(e)
+            return abort(500, 'Database error.')
+        return  {'message':'Delete vertex succeed.'}, 200
 
 class EdgeDAO:
     def __init__(self):

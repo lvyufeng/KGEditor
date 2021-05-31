@@ -58,13 +58,25 @@ class Graph(Resource):
         '''Fetch a given resource'''
         return graph_dao.get(id)
 
-    # @ns.doc('delete_project')
-    # @login_required
-    # def delete(self, id):
-    #     '''Delete a project'''
-    #     return project_dao.delete(id)
+@ns.route("/<int:id>/traverse")
+class GraphTraverse(Resource):
+    @ns.doc('traverse_graph')
+    @login_required
+    def post(self, id):
+        '''Fetch a given resource'''
+        req_dict = api.payload
+        return graph_dao.traverse(id, req_dict)
 
-@ns.route("/vertex/<string:id>")
+@ns.route("/<int:id>/neighbor")
+class GraphNeighbor(Resource):
+    @ns.doc('get_vertex_neighbor')
+    @login_required
+    def post(self, id):
+        '''Fetch a given resource'''
+        req_dict = api.payload
+        return graph_dao.neighbor(id, req_dict)
+
+@ns.route("/<int:id>/vertex/<string:collection>")
 @ns.response(404, 'Graph not found')
 @ns.param('id', "The graph identifier")
 class VertexList(Resource):
@@ -72,11 +84,30 @@ class VertexList(Resource):
     @ns.doc('get_graph_vertex')
     @ns.expect(vertex_praser)
     @login_required
-    def get(self, id):
+    def get(self, id, collection):
         '''Fetch a given vetex collection'''
         data = vertex_praser.parse_args()
         page = data.get('page')
         page_len = data.get('len')
         if None in [page, page_len]:
             return abort(400, "Invalid parameters.")
-        return vertex_dao.get(id, page, page_len)
+        return vertex_dao.get(collection, page, page_len)
+
+    @ns.doc('create_graph_vertex')
+    @login_required
+    def post(self, id, collection):
+        '''Create a new vertex'''
+        req_dict = api.payload
+        name = req_dict.get('name')
+        if not name:
+            return abort(400, "Invalid parameters.")
+        return vertex_dao.create(id, collection, api.payload)
+
+@ns.route('/<int:graph_id>/vertex/<string:collection>/<string:vertex_id>')
+class Vertex(Resource):
+    """Show a single vertex item and lets you delete them"""
+    @ns.doc('delete_vertex')
+    @login_required
+    def delete(self, graph_id, collection, vertex_id):
+        '''Delete a task given its identifier.'''
+        return vertex_dao.delete(graph_id, collection, vertex_id)
