@@ -24,9 +24,9 @@ class ProjectList(Resource):
         '''List all projects'''
         data = parser.parse_args()
         project_type = data.get('type')
-        if project_type == '0':
+        if project_type == 'annotation':
             return project_dao.all(project_type=TASK_ANNOTATION)
-        elif project_type == '1':
+        elif project_type == 'fusion':
             return project_dao.all(project_type=TASK_FUSION)
         return project_dao.all()
 
@@ -48,6 +48,16 @@ class Project(Resource):
     def get(self, id):
         '''Fetch a given resource'''
         return project_dao.get(id)
+
+    @ns.doc('update_project')
+    @login_required
+    def patch(self, id):
+        '''Update project'''
+        req_dict = api.payload
+        name = req_dict.get('name')
+        if not name:
+            return abort(400, "Invalid parameters.")
+        return project_dao.update(id, req_dict)
 
     @ns.doc('delete_project')
     @login_required

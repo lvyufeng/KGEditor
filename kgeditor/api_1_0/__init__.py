@@ -11,5 +11,8 @@ from .passport import *
 from .project import *
 from .domain import *
 from .model import *
-from .graph import *
 from .upload import *
+from .data import *
+from .graph import *
+from .graph_vertex import *
+from .graph_edge import *

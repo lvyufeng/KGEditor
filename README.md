@@ -17,14 +17,6 @@ mkdir logs
 python manage.py runserver
 ```
 ----
-### DB design
-
-1. User
-2. Domain
-3. Project
-4. Graph
-5. Partner_Project
-----
 ### DB migration instructions
 
 ```bash
@@ -35,3 +27,5 @@ python manage.py db migrate -m "your message"
 # execute migration
 python manage.py db upgrade
 ```
+
+### Celery usage

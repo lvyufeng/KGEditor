@@ -23,6 +23,7 @@ class DomainList(Resource):
     @ns.doc('create_domain')
     @login_required
     def post(self):
+        """Create new domain"""
         req_dict = api.payload
         name = req_dict.get('name')
         if not name:

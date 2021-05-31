@@ -40,7 +40,14 @@ class ProjectDAO:
         return {'data': data, 'message':'Fetch project succeed.'}, 200
 
     def update(self, id, data):
-        pass
+        user_id = g.user_id
+        try:
+            project = Project.query.filter_by(id=id, creator_id=user_id).first()
+            project.name = data['name']
+        except Exception as e:
+            logging.error(e)
+            return abort(500, 'Database error.')
+        return {'message': 'Update project succeed.'}, 200
 
     def delete(self, id):
         user_id = session.get('user_id')

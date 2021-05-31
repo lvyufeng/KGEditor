@@ -33,6 +33,7 @@ class ModelList(Resource):
     @ns.doc('add_model')
     @login_required
     def post(self):
+        ''''''
         req_dict = api.payload
         name = req_dict.get('name')
         model_type = req_dict.get('type')
