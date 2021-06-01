@@ -1,11 +1,12 @@
+import re
+import logging
 from flask_restx import Resource, fields, reqparse
 from . import api
 from kgeditor.dao.project import ProjectDAO
 from flask import abort, session, request
-import re
-import logging
 from kgeditor.utils.common import login_required
 from kgeditor.constants import TASK_ANNOTATION, TASK_FUSION, TASK_GRAPH
+from tasks.test_task.tasks import long_task
 
 ns = api.namespace('Project', path='/', description='Project operations')
 
@@ -13,6 +14,8 @@ project_dao = ProjectDAO()
 
 parser = reqparse.RequestParser()
 parser.add_argument('type', type=str)
+task_parser = reqparse.RequestParser()
+task_parser.add_argument('task_id', type=str)
 
 @ns.route('/project')
 class ProjectList(Resource):
@@ -72,9 +75,41 @@ class ProjectTask(Resource):
     @login_required
     def post(self, id):
         """Commit the task"""
-        return [], 201
+        task = long_task.apply_async()
+        return {'data': {'task_id':task.id}}, 201
 
     @ns.doc('get_status')
+    @ns.expect(task_parser)
     def get(self, id):
         """Fetch the status of task"""
-        return [], 200   
+        data = task_parser.parse_args()
+        task_id = data.get('task_id')
+        if task_id is None:
+            return abort(400, 'Invalid parameters.')
+        task = long_task.AsyncResult(task_id)
+        if task.state == 'PENDING':
+            # job did not start yet
+            response = {
+                'state': task.state,
+                'current': 0,
+                'total': 1,
+                'status': 'Pending...'
+            }
+        elif task.state != 'FAILURE':
+            response = {
+                'state': task.state,
+                'current': task.info.get('current', 0),
+                'total': task.info.get('total', 1),
+                'status': task.info.get('status', '')
+            }
+            if 'result' in task.info:
+                response['result'] = task.info['result']
+        else:
+            # something went wrong in the background job
+            response = {
+                'state': task.state,
+                'current': 1,
+                'total': 1,
+                'status': str(task.info),  # this is the exception raised
+            }
+        return {'data':response}, 200   

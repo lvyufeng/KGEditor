@@ -9,6 +9,7 @@ celery_app.autodiscover_tasks(
         "tasks.import_triple_data",
         "tasks.import_raw_data",
         "tasks.graph_merge_task",
-        "annotation_task"
+        "tasks.annotation_task",
+        'tasks.test_task'
     ]
 )
