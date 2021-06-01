@@ -10,7 +10,7 @@ class ModelDAO:
     def create(self, data):
         user_id = g.user_id
         try:
-            domain = Model.query.filter_by(name=data['name']).first()
+            domain = Model.query.filter_by(name=data['model_name']).first()
         except Exception as e:
             logging.error(e)
             return abort(500, 'Database error.')
@@ -18,7 +18,7 @@ class ModelDAO:
             if domain is not None:
                 return abort(500, 'Model already exist.')
 
-        model = Model(name=data.get('name'), creator_id=user_id, model_type=data.get('type'), url=data.get('url'), private=data.get('private'), discription=data.get('discription', None))
+        model = Model(name=data.get('model_name'), creator_id=user_id, model_type=data.get('model_type'), url=data.get('model_url'), private=data.get('model_private'), description=data.get('model_description', None))
         try:
             db.session.add(model)
             db.session.commit()
@@ -47,11 +47,11 @@ class ModelDAO:
         logging.info(data)
         try:
             model = Model.query.filter_by(id=id).first()
-            model.name = data['name']
-            model.model_type = data['type']
-            model.url = data['url']
-            model.private = data['private']
-            model.discription = data['discription']
+            model.name = data['model_name']
+            model.model_type = data['model_type']
+            model.url = data['model_url']
+            # model.private = data['model_private']
+            model.description = data.get('model_description')
             db.session.commit()
         except Exception as e:
             logging.error(e)

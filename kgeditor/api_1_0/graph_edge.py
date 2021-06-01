@@ -36,3 +36,12 @@ class Edge(Resource):
     def delete(self, graph_id, collection, edge_id):
         '''Show a graph edge and lets you delete it.'''
         return edge_dao.delete(graph_id, collection, edge_id)
+
+    @ns.doc('update_graph_edge')
+    def patch(self, graph_id, collection, edge_id):
+        '''Update graph edge'''
+        req_dict = api.payload
+        new_collection = req_dict.get('relation')
+        if new_collection is None:
+            return abort(400, 'Invalid parameters.')
+        return edge_dao.update(graph_id, collection, edge_id, new_collection)

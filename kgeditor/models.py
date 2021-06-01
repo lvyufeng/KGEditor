@@ -66,6 +66,7 @@ class Data(BaseModel, db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey("user_profile.id"), nullable=False)
     private = db.Column(db.Boolean, nullable=False)
     is_raw = db.Column(db.Boolean, nullable=False)
+    domain_id = db.Column(db.Integer, db.ForeignKey("domain.id"), nullable=False)
     
     def to_dict(self):
         return {
@@ -113,7 +114,7 @@ class Model(BaseModel, db.Model):
     model_type = db.Column(db.Integer, nullable=False)
     url = db.Column(db.String(200), unique=True, nullable=False)
     private = db.Column(db.Boolean, nullable=False)
-    discription = db.Column(db.String(500), nullable=True)
+    description = db.Column(db.String(500), nullable=True)
 
     def to_dict(self):
         return {
@@ -121,5 +122,5 @@ class Model(BaseModel, db.Model):
             'model_name': self.name,
             'model_url': self.url,
             'model_type': self.model_type,
-            'model_discription': self.discription
+            'model_description': self.description
         }

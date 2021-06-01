@@ -31,11 +31,23 @@ class EdgeDAO:
         except Exception as e:
             logging.error(e)
             return abort(500, 'Database error.')
-        return {'message':'Create edge succeed.'}, 200
+        return {'message':'Create edge succeed.'}, 201
 
 
-    def update(self, id, data):
-        pass
+    def update(self, graph_id, collection, edge_id, new_collection):
+        edge_data, status = self.get(graph_id, collection, edge_id)
+        if status != 200:
+            return abort(500, 'Database error.')
+        req_dict = {
+            'from':edge_data['data']['_from'],
+            'to':edge_data['data']['_to'],
+            'attribute':{}
+        }
+        _, status = self.create(graph_id, new_collection, req_dict)
+        self.delete(graph_id, collection, edge_id)
+        if status != 201:
+            return abort(500, 'Database error.')
+        return {'message':'Update edge succeed.'}, 200
 
     def delete(self, graph_id, collection, edge_id):
         db_graph = domain_db.graphs['graph_{}'.format(graph_id)]

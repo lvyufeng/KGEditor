@@ -35,10 +35,10 @@ class ModelList(Resource):
     def post(self):
         ''''''
         req_dict = api.payload
-        name = req_dict.get('name')
-        model_type = req_dict.get('type')
-        url = req_dict.get('url')
-        private = req_dict.get('private')
+        name = req_dict.get('model_name')
+        model_type = req_dict.get('model_type')
+        url = req_dict.get('model_url')
+        private = req_dict.get('model_private')
         if None in [name, url, model_type, private]:
             return abort(400, "Invalid parameters.")
         return model_dao.create(api.payload)
@@ -60,11 +60,11 @@ class Model(Resource):
     def patch(self, id):
         '''Update a model given its identifier.'''
         req_dict = api.payload
-        name = req_dict.get('name')
-        model_type = req_dict.get('type')
-        url = req_dict.get('url')
-        private = req_dict.get('private')
-        if None in [name, url, model_type, private]:
+        name = req_dict.get('model_name')
+        model_type = req_dict.get('model_type')
+        url = req_dict.get('model_url')
+        # private = req_dict.get('model_private')
+        if None in [name, url, model_type]:
             return abort(400, "Invalid parameters.")
         
         return model_dao.update(id, api.payload)

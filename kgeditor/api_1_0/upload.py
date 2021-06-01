@@ -11,7 +11,7 @@ dtype_dict = {
     'data': data
 }
 
-ns = api.namespace('Upload', path='/', description='Upload operations')
+ns = api.namespace('Data', path='/', description='Upload operations')
 upload_parser = ns.parser()
 upload_parser.add_argument('file', location='files',
                            type=FileStorage, required=True)

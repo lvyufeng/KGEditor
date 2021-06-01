@@ -29,3 +29,8 @@ python manage.py db upgrade
 ```
 
 ### Celery usage
+
+```bash
+# start all celery tasks
+celery -A tasks.main worker -l info
+```
