@@ -16,3 +16,4 @@ from .data import *
 from .graph import *
 from .graph_vertex import *
 from .graph_edge import *
+from .graph_collection import *

@@ -1,9 +1,12 @@
-flask
+markupsafe==2.0.1
+Jinja2==2.11.3
+werkzeug==1.0.1
+flask==1.1.4
 flask-script
 flask-sqlalchemy
 flask-session
 flask-wtf
-flask-migrate
+flask-migrate==2.6.0
 flask-cors
 flask-uploads
 flask-docs

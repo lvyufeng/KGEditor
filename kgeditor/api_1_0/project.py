@@ -3,14 +3,22 @@ import logging
 from flask_restx import Resource, fields, reqparse
 from . import api
 from kgeditor.dao.project import ProjectDAO
+from kgeditor.dao.data import DataDao
 from flask import abort, session, request
 from kgeditor.utils.common import login_required
 from kgeditor.constants import TASK_ANNOTATION, TASK_FUSION, TASK_GRAPH
-from tasks.test_task.tasks import long_task
+from kgeditor.models import Data
+from tasks.annotation_task.tasks import annotation_task
+from config import Config
+import csv
+import pymysql
+from kgeditor import db
+from flask import g
 
 ns = api.namespace('Project', path='/', description='Project operations')
 
 project_dao = ProjectDAO()
+data_dao = DataDao()
 
 parser = reqparse.RequestParser()
 parser.add_argument('type', type=str)
@@ -75,7 +83,17 @@ class ProjectTask(Resource):
     @login_required
     def post(self, id):
         """Commit the task"""
-        task = long_task.apply_async()
+        req_dict = api.payload
+        data_id = req_dict.get('data_id')
+        model_url = req_dict.get('model_url')
+        try:
+            data = Data.query.filter_by(id=data_id).first()
+        except Exception as e:
+            logging.error(e)
+            return abort(500, 'Database error.')
+        filepath = Config.UPLOADED_DATA_DEST + data.data_info[1:-1]
+        print(filepath)
+        task = annotation_task.apply_async(kwargs={'filepath':filepath,'model_url': model_url})
         return {'data': {'task_id':task.id}}, 201
 
     @ns.doc('get_status')
@@ -86,7 +104,7 @@ class ProjectTask(Resource):
         task_id = data.get('task_id')
         if task_id is None:
             return abort(400, 'Invalid parameters.')
-        task = long_task.AsyncResult(task_id)
+        task = annotation_task.AsyncResult(task_id)
         if task.state == 'PENDING':
             # job did not start yet
             response = {
@@ -113,3 +131,44 @@ class ProjectTask(Resource):
                 'status': str(task.info),  # this is the exception raised
             }
         return {'data':response}, 200   
+
+@ns.route('/project/<int:id>/task_result')
+class ProjectTaskResult(Resource):
+    """Save result of the task as csv file into server"""
+    @ns.doc('commit_project')
+    @login_required
+    def post(self,id):
+        """save the task result"""
+        req_dict = api.payload
+        result_name = req_dict.get('name')
+        result_private = req_dict.get('private')
+        task_result = req_dict.get('result')
+        print(result_name)
+        print(req_dict)
+        csv_file = open(Config.UPLOADED_DATA_DEST+result_name+'.csv', 'a', newline='')
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(['e1','e1_type','e2','e2_type','relation_type'])
+        for item in task_result:
+            csv_writer.writerow([item['e1'],item['e1_type'],item['e2'],item['e2_type'],item['relation_type']])
+            print(item['e1'])
+        csv_file.close()
+
+        data = Data(
+            name=result_name, 
+            data_type=2, 
+            creator_id=g.user_id, 
+            private=result_private, 
+            data_info=result_name+'.csv', 
+            is_raw=False
+        )
+        try:
+            db.session.add(data)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logging.error(e)
+            return abort(500, 'Database error.')
+        
+        return {'message':'Create data succeed.'}, 201
+
+
