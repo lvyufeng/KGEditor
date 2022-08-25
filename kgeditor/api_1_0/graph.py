@@ -77,3 +77,10 @@ class GraphNeighbor(Resource):
         '''Fetch a given resource'''
         req_dict = api.payload
         return graph_dao.neighbor(graph_id, req_dict)
+
+@ns.route("/<int:graph_id>/insert_triplet")
+class GraphTriplet(Resource):
+    @login_required
+    def post(self, graph_id):
+        req_dict = api.payload
+        return graph_dao.insert_triplet(graph_id, req_dict)

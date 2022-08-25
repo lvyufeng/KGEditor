@@ -14,11 +14,11 @@ class VertexDAO:
     def create(self, graph_id, collection, data):
         db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
         try:
-            db_graph.createVertex(collection, data)
+            vertex = db_graph.createVertex(collection, data)
         except Exception as e:
             logging.error(e)
             return abort(500, 'Create vertex failed.')
-        return {'message':'Create vertex succeed.'}, 201
+        return {'message':'Create vertex succeed.', 'id': vertex._id}, 201
 
     def update(self, graph_id, collection, vertex_id, data):
         db_graph = domain_db.graphs['graph_{}'.format(graph_id)]

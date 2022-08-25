@@ -49,7 +49,10 @@ class CollectionDAO:
             domain_db.createCollection(collection_type, name=req['name'])
         except Exception as e:
             logging.error(e)
-            return abort(500, 'Database error.')
+            if 'already has a collection' in e.message:
+                pass
+            else:       
+                return abort(500, 'Database error.')
         
 
         try:

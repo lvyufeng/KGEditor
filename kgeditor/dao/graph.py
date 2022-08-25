@@ -3,6 +3,15 @@ from kgeditor.models import Graph
 from kgeditor import domain_db, db
 from kgeditor.utils.graph_utils import process_visited
 from flask import session, abort, g
+from xpinyin import Pinyin
+from .graph_collection import CollectionDAO
+from .graph_edge import EdgeDAO
+from .graph_vertex import VertexDAO
+
+collection_dao = CollectionDAO()
+edge_dao = EdgeDAO()
+vertex_dao = VertexDAO()
+pinyin = Pinyin()
 
 class GraphDAO:
     def __init__(self):
@@ -117,3 +126,25 @@ class GraphDAO:
             return abort(500, 'Database error.')
 
         return {'data':process_visited(data['visited']), 'message':'Fetch vertex neighbor succeed.'}, 200
+
+    def insert_triplet(self, graph_id, req_dict):
+        db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
+        e1_type = pinyin.get_pinyin(req_dict['e1_type'])
+        collection_dao.create(graph_id, 'vertex', {'name': e1_type})
+        e2_type = pinyin.get_pinyin(req_dict['e2_type'])
+        collection_dao.create(graph_id, 'vertex', {'name': e2_type})
+
+        relation_type = pinyin.get_pinyin(req_dict['relation_type'])
+        e1 = req_dict['e1']
+        e2 = req_dict['e2']
+        e1_msg, _ = vertex_dao.create(graph_id, e1_type, {'name': e1})
+        e2_msg, _ = vertex_dao.create(graph_id, e2_type, {'name': e2})
+        collection_dao.create(graph_id, 'edge', {'name': relation_type, 'from':[e1_type], 'to':[e2_type]})
+        data = {
+            "from": e1_msg['id'],
+            "to": e2_msg['id'],
+            "attribute": {'name': req_dict['relation_type']}
+        }
+        print(data)
+        edge_dao.create(graph_id, relation_type, data)
+        return {'message': 'Triplet inserted.'}, 201
