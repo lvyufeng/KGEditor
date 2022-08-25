@@ -29,20 +29,29 @@ class CollectionDAO:
         if type not in ['edge', 'vertex']:
             return abort(500, 'Database error.')
 
-        collection_type = 'Collection' if type == 'vertex' else 'Edges'
-        
+        db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
+        if type == 'vertex':
+            collection_type = 'Collection' 
+            url = "%s/vertex" % (db_graph.getURL())
+
+            data = { 
+                    "collection" : req['name'] 
+                }
+        else:
+            collection_type = 'Edges' 
+            url = "%s/edge" % (db_graph.getURL())
+            data = { 
+                "collection" : req['name'], 
+                "from" : req['from'], 
+                "to" : req['to'] 
+            }
         try:
             domain_db.createCollection(collection_type, name=req['name'])
         except Exception as e:
             logging.error(e)
             return abort(500, 'Database error.')
         
-        db_graph = domain_db.graphs['graph_{}'.format(graph_id)]
-        url = "%s/vertex" % (db_graph.getURL())
 
-        data = { 
-                "collection" : req['name'] 
-            }
         try:
             print(url)
             r = db_graph.connection.session.post(url, json=data)
